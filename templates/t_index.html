@@ -1,0 +1,91 @@
+<!-- BASE=t_layout.html -->
+<!-- BEGIN=content -->
+<style>
+   td.low { background-color:lightblue;}
+   td.med { background-color:lightgreen;}
+   td.high { background-color:orangered ;}
+   tr.odd { color: #000000;}
+   tr.even { color:#0000A7;}
+   div.i
+   d { font-size:1.7em }
+   div.calc_block { border: 1px #443333 solid; background-color:#AABBAA; }
+   div.raw_block { border: 1px #443333 solid; background-color:#AABBDD; }
+   div.ll { margin-top:7px; font-size:21px; color:red; }
+
+   #flot-t_plot{
+      height:300px;
+
+    }
+
+</style>
+
+<div class="row">
+   <div class="col-7">
+      <h3>Host Information</h3>
+      <table class="table table-bordered table-striped">
+         <tr><th>Hostname</th><td>$hostname</td></tr>
+         <tr><th>Release</th><td>$release</td></tr>
+         <tr><th>Uptime</th><td>$uptime</td></tr>
+      </table>
+   </div>
+</div>
+
+<div class="row">
+   <div class="col-7">
+      <!-- BEGIN=nic_blk -->
+      <h3>Interface: $if_name</h3>
+      <table class="table table-bordered table-striped">
+         <tr><th>IP Address</th><td>$addr</td></tr>
+         <tr><th>Netmask</th><td>$netmask</td></tr>
+         <tr><th>Gateway</th><td>$gateway</td></tr>
+         <tr><th>Mac Address</th><td>$mac</td></tr>
+      </table>
+      <!-- END=nic_blk -->
+   </div>
+</div>
+
+<div class="row">
+   <div class="col">
+      <!-- BEGIN=log_row -->
+      <div class="ll"> $log_line </div>
+      <!-- END=log_row -->
+      <!-- BEGIN=no_events -->
+      <div style="color:green;font-weight:bold;"> No Power Down Events Since Last Boot $uptime_str ago </div>
+      <!-- END=no_events -->
+   </div>
+</div>
+
+<div class="row" style="margin-top:10px;">
+   <div class="col">
+      <hr>
+      <h2>Trends</h2>
+      <div id="flot-t_plot"></div>
+   </div>
+</div>
+
+<div class="row">
+   <div class="col-xs-12" style="text-align:right;font-size:.7em;margin-top:50px;">
+      Version: $version
+   </div>
+</div>
+
+<script type="text/javascript">
+
+var plot_options = {
+    series: {
+        lines: { show: true },
+        points: { show: true }
+    },
+    xaxis: {
+      mode: "time",
+      timezone: "browser",
+      timeformat: "%H:%M"
+    }
+};
+
+$(document).ready(function(){
+    $.plot($("#flot-t_plot"), $plot_data , plot_options);
+});
+
+</script>
+<!-- END=content -->

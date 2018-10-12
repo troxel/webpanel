@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title></title>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <meta http-equiv="refresh" content="$refresh">
+      <link>
+      </link>
+      <link rel="stylesheet" type="text/css" href="/static/bootstrap-4.1.3/css/bootstrap.min.css">
+      <script src="/static/jquery_v3.1.1.js"></script>
+      <script src="/static/flot/jquery.flot.min.js"></script>
+      <script src="/static/flot/jquery.flot.time.min.js"></script>
+
+      $jscript
+   </head>
+   <body>
+      <div class="container header" style="margin-bottom:10px;">
+         <div class="row" style="">
+            <div class="col-7" style="margin-left:10px;">
+               <h3 style="font-weight:bold;">WebPanel</h3>
+            </div>
+            <!-- BEGIN=stat_grp -->
+            <!-- BEGIN=stat_on -->
+            <div class="col-2" style="text-align:center;">
+             <h5 class="text-success">$lbl Array ON</h5>
+            </div>
+            <!-- END=stat_on -->
+            <!-- BEGIN=stat_off -->
+            <div class="col-2" style="text-align:center;">
+             <h5 class="text-danger">$lbl Array OFF</h5>
+            </div>
+            <!-- END=stat_off -->
+            <!-- END=stat_grp -->
+
+         </div>
+         <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+               <ul class="navbar-nav mr-auto">
+                  <li class="nav-item" id="home">
+                     <a class="nav-link" href="/">Home </a>
+                  </li>
+                  <li class="nav-item" id="control_disp">
+                     <a id="control_disp" class="nav-link" href="/control_disp">Control</a>
+                  </li>
+                  <li class="nav-item" id="status">
+                     <a class="nav-link" href="/status">Status</a>
+                  </li>
+               </ul>
+            </div>
+         </nav>
+      </div>
+      <div class="container" style="">
+         $content
+      </div>
+      <div class="container footer">
+      </div>
+
+      <script>
+         var pagePathName= window.location.pathname;
+         page = pagePathName.substring(pagePathName.lastIndexOf("/") + 1);
+         if ( page )
+         {
+            $("#" + page).addClass('active')
+         }
+         else
+         {
+            ( $("#home").addClass('active') );
+         }
+
+      </script>
+
+
+   </body>
+</html>

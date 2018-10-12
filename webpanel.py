@@ -15,22 +15,23 @@ import re
 import datetime
 import subprocess
 
+import psutil
+
 import traceback
-
-
-import solo
-solo.chk_and_stopall(__file__)
 
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-q", help="Run in embedded mode",action="store_true")
 args = parser.parse_args()
 
-# Common file specifications
-import fspec
+import sysinfo
 
+# Local sub-modules
 sys.path.append('./packages')
 from templaterex import TemplateRex
+
+import solo
+solo.chk_and_stopall(__file__)
 
 class PyServ(object):
 
@@ -53,51 +54,44 @@ class PyServ(object):
       data_hsh = {}
       root_path = os.getcwd()
 
-      trex = TemplateRex(fname='t_mon_index.html')
+      sys_info = sysinfo.netinfo()
+      nic_info = sys_info.get_iface_info()
 
-      # Last Measurement
-      rtn_json = self._read_json(fspec.t_last)
-      if rtn_json:
+      host_info = sys_info.get_host_info()
 
-         # json is returned as a list of hash
-         for dev_hsh in rtn_json['json']:
-            trex.render_sec('t_row',dev_hsh)
+      data_hsh.update(host_info)
 
-         diff_time = time.time() - rtn_json['stat'].st_mtime
+      trex = TemplateRex(fname='t_index.html')
 
-         if diff_time > 10:
-            trex.render_sec('stale_warn',{'diff_time':str(diff_time)})
-
-      else:
-         trex.render_sec('no_last',{})
-
-      # Display power down events.
-      if os.path.isfile(fspec.pwr_down_log):
-         cmd_lst = ['tail',fspec.pwr_down_log]
-         rtn = subprocess.run(cmd_lst, stdout=subprocess.PIPE)
-         log_tail = rtn.stdout.decode('utf-8')
-
-         log_lst = log_tail.splitlines()
-         log_lst.reverse()
-
-         for log_line in log_lst:
-            trex.render_sec('log_row',{'log_line':log_line})
-      else:
-            uptime_str = self._uptime()
-            trex.render_sec('no_events',{'uptime_str':uptime_str})
-
+      for nic in nic_info:
+         trex.render_sec('nic_blk',nic_info[nic])
 
       data_hsh['version'] = self.version
 
       trex.render_sec('content',data_hsh)
 
-      page = trex.render()
+      page = trex.render(data_hsh)
 
       return page
 
    # --------------------------------------------
    # utility functions
    # --------------------------------------------
+   def _get_nic_info(self):
+
+      nics = psutil.net_if_addrs()
+      nics.pop('lo')
+
+      nic_info = {}
+      for nic, nic_addrs in nics.items():
+         nic_info[nic] = {}
+         nic_info[nic]['ip_addr']    = nic_addrs[0].address
+         nic_info[nic]['ip_netmask'] = nic_addrs[0].netmask
+         nic_info[nic]['mac_addr']   = nic_addrs[2].address
+         nic_info[nic]['nic_name']   = nic
+
+      return(nic_info)
+
    def _uptime(self):
       with open('/proc/uptime', 'r') as fid:
          uptime_seconds = float(fid.readline().split()[0])
@@ -126,7 +120,7 @@ class PyServ(object):
 
 
 ####### End of Class PyServ #############
-port = 8080
+port = 9091
 
 if __name__ == '__main__':
 
@@ -149,5 +143,5 @@ if __name__ == '__main__':
       cherrypy.config.update({'environment': 'production'})
       cherrypy.config.update({'log.access_file':'/dev/null'})
 
-   cherrypy.quickstart(PyServ(), '/', '/home/pi/t_mon/conf/pyserv.conf')
+   cherrypy.quickstart(PyServ(), '/', '/opt/webpanel/conf/pyserv.conf')
    p.terminate()
