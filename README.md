@@ -6,3 +6,4 @@ Provide generic web interface to setting network and related parameters for embe
 
 distro
 netifaces
+netaddr
