@@ -25,9 +25,13 @@ def get_iface_info():
 
    for if_name in if_lst:
       ifstruct = net.ifaddresses(if_name)
-
+      
+      try: 
+         tmp_hsh = ifstruct[net.AF_INET][0]  # loads addr,broadcast,netmask
+      except:
+         continue 
+      
       if_hsh[if_name] = {}
-      tmp_hsh = ifstruct[net.AF_INET][0]  # loads addr,broadcast,netmask
       if_hsh[if_name]['ip_address'] = tmp_hsh['addr']
       if_hsh[if_name]['broadcast']  = tmp_hsh['broadcast']
       if_hsh[if_name]['netmask']    = tmp_hsh['netmask']
