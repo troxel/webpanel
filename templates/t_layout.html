@@ -42,7 +42,16 @@
       <div class="container footer">
       </div>
 
+      <style>
+         .err_id_state
+         {
+            color: red;
+         }
+      </style>
+
       <script>
+
+         // Highlights menu active
          var pagePathName= window.location.pathname;
          page = pagePathName.substring(pagePathName.lastIndexOf("/") + 1);
          if ( page )
@@ -53,6 +62,16 @@
          {
             ( $("#home").addClass('active') );
          }
+
+         // set error class to ids in err
+         // requires input from code
+         //if ($err_id_lst_json)
+         //{
+         //   for (inx in $err_id_lst_json)
+         //   {
+         //      $("#" + $err_id_lst_json[inx]).addClass('err_id_state')
+         //   }
+         //}
 
       </script>
 

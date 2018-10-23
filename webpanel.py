@@ -77,9 +77,13 @@ class PyServ(object):
 
    # ------------------------
    @cherrypy.expose
-   def netconf(self,err_msg=""):
+   def netconf(self,err_struct=""):
 
       data_hsh = {}
+
+      #if err_struct:
+      #   data_hsh['err_msg'] = err_struct['err_msg'];
+      #   data_hsh['err_id_lst_json'] = json.dumps(err_struct['err_ids'])
 
       nic_info  = sysinfo.get_iface_info()
       host_info = sysinfo.get_host_info()
@@ -121,17 +125,40 @@ class PyServ(object):
 
       if params['ip_method'] == 'static':
 
-         err_msg = ''
-         for ip_addr in ('addr','gateway','netmask'):
-            try:
-               ip_ckh = ipaddress.ip_address(params[ip_addr])
-            except:
-               err_msg += "ip " + ip_addr
+         # --------- Validate input   ---------
+         err_lst = []
 
-         if err_msg:
-            return self.netconf(err_msg=err_msg)
+         # If single instance of if_name a str is returned if multiple a list
+         if isinstance(params['if_name'],str): params['if_name'] = [params['if_name']]
 
-      pprint.pprint(params)
+         for if_name in params['if_name']:
+
+            for addr in ('ip_address','gateway'):
+               key = "{}-{}".format(if_name,addr)
+
+               try:
+                  ip_ckh = ipaddress.ip_address(params[key])
+               except:
+                  err_lst.append(key)   # assumes id == name in input html
+
+            for dns_key in ('dns_server_0','dns_server_1'):
+               try:
+                  ip_ckh = ipaddress.ip_address(params[dns_key])
+               except:
+                  err_lst.append(dns_id)
+
+         if err_lst:
+               err_msg = "<h1>Error! on input</h1>"
+               for key in err_lst:
+                  err_msg += "<li> {}={} </li>".format(key,params[key])
+
+               err_msg += "<h2>Backspace and correct</h2>"
+
+               return(err_msg)
+
+               #return self.netconf(err_struct=err_struct)
+         # -------------
+
       return("hello <pre>",pprint.pformat(params))
 
 
