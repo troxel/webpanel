@@ -105,6 +105,10 @@ class PyServ(object):
 
       trex = TemplateRex(fname='t_netconf.html')
 
+      # Pulling back support for multiple NIC for now.
+      if len(nic_info) > 1:
+         return("Error only one NIC supported")
+
       for nic in nic_info:
          trex.render_sec('nic_blk',nic_info[nic])
 
@@ -120,67 +124,73 @@ class PyServ(object):
    @cherrypy.expose
    def netconf_rtn(self, **params):
 
+      # This takes the extra step to handle multiple interfaces. Adds
+      # complexity but there cases when there are multiple interfaces.
+
       host_info = sysinfo.get_host_info()
-      pprint.pprint(host_info)
+      ##pprint.pprint(host_info)
 
       if params['ip_method'] == 'static':
 
          # --------- Validate input   ---------
-         err_lst = []
-
-         # If single instance of if_name a str is returned if multiple a list
-         if isinstance(params['if_name'],str): params['if_name'] = [params['if_name']]
-
-         for if_name in params['if_name']:
-
-            for addr in ('ip_address','gateway'):
-               key = "{}-{}".format(if_name,addr)
-
-               try:
-                  ip_ckh = ipaddress.ip_address(params[key])
-               except:
-                  err_lst.append(key)   # assumes id == name in input html
-
-            for dns_key in ('dns_server_0','dns_server_1'):
-               try:
-                  ip_ckh = ipaddress.ip_address(params[dns_key])
-               except:
-                  err_lst.append(dns_id)
+         err_lst = self.netconf_validate(params)
 
          if err_lst:
-               err_msg = "<h1>Error! on input</h1>"
-               for key in err_lst:
-                  err_msg += "<li> {}={} </li>".format(key,params[key])
+            trex_err = TemplateRex(fname='t_netconf_err.html')
+            for key in err_lst:
+               print("key ->",key," ",params[key])
+               trex_err.render_sec("err_blk",{'key':key, 'val':params[key]})
 
-               err_msg += "<h2>Backspace and correct</h2>"
-
-               return(err_msg)
-
-               #return self.netconf(err_struct=err_struct)
+            trex_err.render_sec('content')
+            return(trex_err.render())
          # -------------
 
-      return("hello <pre>",pprint.pformat(params))
+      # Oh boy good-to-go write conf files
 
+      # Assumes dhcpcd5 is controlling the network configuration
+      # Reference https://www.daemon-systems.org/man/dhcpcd.conf.5.html
+      trex_dhcpcd = TemplateRex(fname='/etc/dhcpcd-template.conf',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      if params['ip_method'] == 'static':
+         trex_dhcpcd.render_sec('static_conf',params)
+
+      pprint.pprint(params)
+
+      dhcpcd_file = trex_dhcpcd.render(params)
+      rtn = os.system('mount -o rw,remount /')
+      if rtn != 0:
+         return("Cannot remount rw root partition")
+
+      with open('/etc/dhcpcd.conf', 'w+') as fid:
+         fid.write(dhcpcd_file)
+
+      rtn = os.system('mount -o ro,remount /')
+      if rtn != 0:
+         return("Cannot remount r0 root partition")
+
+      print("doing a redirect")
+      raise cherrypy.HTTPRedirect("/")
+
+   # ------------------------
+   def netconf_validate(self,params):
+
+      err_lst = []
+
+      for key in ('ip_address','gateway','dns_server_0','dns_server_1'):
+         try:
+            ip_ckh = ipaddress.ip_address(params[key])
+         except:
+            err_lst.append(key)   # assumes id == name in input html
+
+      cidr = int(params['cidr'])
+      if ( cidr < 1 or cidr > 31):
+         err_lst.append('cidr')
+
+      return(err_lst)
 
 
    # --------------------------------------------
    # utility functions
    # --------------------------------------------
-   #def _get_nic_info(self):
-   #
-   #   nics = psutil.net_if_addrs()
-   #   nics.pop('lo')
-   #
-   #   nic_info = {}
-   #   for nic, nic_addrs in nics.items():
-   #      nic_info[nic] = {}
-   #      nic_info[nic]['ip_addr']    = nic_addrs[0].address
-   #      nic_info[nic]['ip_netmask'] = nic_addrs[0].netmask
-   #      nic_info[nic]['mac_addr']   = nic_addrs[2].address
-   #      nic_info[nic]['nic_name']   = nic
-   #
-   #   return(nic_info)
-
    def _uptime(self):
       with open('/proc/uptime', 'r') as fid:
          uptime_seconds = float(fid.readline().split()[0])
@@ -205,7 +215,6 @@ class PyServ(object):
                print(traceback.format_exc())
       print(">>> {}".format(try_inx))
       return(False)
-
 
 
 ####### End of Class PyServ #############
