@@ -27,6 +27,7 @@ parser.add_argument("-q", help="Run in embedded mode",action="store_true")
 args = parser.parse_args()
 
 import sysinfo
+import modconfig
 
 # Local sub-modules
 sys.path.insert(0,'./packages')
@@ -127,8 +128,10 @@ class PyServ(object):
       # This takes the extra step to handle multiple interfaces. Adds
       # complexity but there cases when there are multiple interfaces.
 
-      host_info = sysinfo.get_host_info()
-      ##pprint.pprint(host_info)
+      # Object to handle the actual system config.
+      # Assumes dhcpcd5 is controlling the network configuration
+
+      modconf = modconfig.DHCP(ro_flag=True)
 
       if params['ip_method'] == 'static':
 
@@ -145,27 +148,15 @@ class PyServ(object):
             return(trex_err.render())
          # -------------
 
-      # Oh boy good-to-go write conf files
+         modconf.set_static_address(params)
 
-      # Assumes dhcpcd5 is controlling the network configuration
-      # Reference https://www.daemon-systems.org/man/dhcpcd.conf.5.html
-      trex_dhcpcd = TemplateRex(fname='/etc/dhcpcd-template.conf',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
-      if params['ip_method'] == 'static':
-         trex_dhcpcd.render_sec('static_conf',params)
+         modconf.set_hostname(params['hostname'])
 
-      pprint.pprint(params)
+      else:
 
-      dhcpcd_file = trex_dhcpcd.render(params)
-      rtn = os.system('mount -o rw,remount /')
-      if rtn != 0:
-         return("Cannot remount rw root partition")
+         modconf.set_dhcp()
 
-      with open('/etc/dhcpcd.conf', 'w+') as fid:
-         fid.write(dhcpcd_file)
-
-      rtn = os.system('mount -o ro,remount /')
-      if rtn != 0:
-         return("Cannot remount r0 root partition")
+      ##modconf.reboot()
 
       print("doing a redirect")
       raise cherrypy.HTTPRedirect("/")
@@ -186,7 +177,6 @@ class PyServ(object):
          err_lst.append('cidr')
 
       return(err_lst)
-
 
    # --------------------------------------------
    # utility functions
