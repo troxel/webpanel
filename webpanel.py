@@ -148,7 +148,7 @@ class PyServ(object):
             return(trex_err.render())
          # -------------
 
-         modconf.set_static_address(params)
+         modconf.set_static(params)
 
          modconf.set_hostname(params['hostname'])
 
@@ -167,9 +167,12 @@ class PyServ(object):
       err_lst = []
 
       for key in ('ip_address','gateway','dns_server_0','dns_server_1'):
+         
+         
          try:
             ip_ckh = ipaddress.ip_address(params[key])
          except:
+            if key == 'dns_server_1' and params[key] == '': continue
             err_lst.append(key)   # assumes id == name in input html
 
       cidr = int(params['cidr'])
@@ -206,10 +209,9 @@ class PyServ(object):
       print(">>> {}".format(try_inx))
       return(False)
 
-
 ####### End of Class PyServ #############
-port = 9091
 
+port = 9091
 if __name__ == '__main__':
 
    #dir_session = './sessions'
@@ -230,6 +232,12 @@ if __name__ == '__main__':
    if args.q:
       cherrypy.config.update({'environment': 'production'})
       cherrypy.config.update({'log.access_file':'/dev/null'})
+      cherrypy.config.update({'request.error_response': show_blank_page_on_error})
 
    cherrypy.quickstart(PyServ(), '/', '/opt/webpanel/conf/pyserv.conf')
    p.terminate()
+
+   # --------------------------------------------------
+   def show_blank_page_on_error(msg):
+      cherrypy.response.status = 500
+      cherrypy.response.body = "Hello " + msg

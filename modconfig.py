@@ -19,14 +19,14 @@ class DHCP:
       self.ro_flag = ro_flag
 
    # ------------------------
-   def set_static_ip(self):
+   def set_static(self,params):
 
       trex_dhcpcd = TemplateRex(fname='/etc/dhcpcd-template.conf',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
       if params['ip_method'] == 'static':
          trex_dhcpcd.render_sec('static_conf',params)
 
-      dhcpcd_file = trex_dhcpcd.render(params)
-      return(self.write_file(dhcpcd_file))
+      dhcpcd_file_content = trex_dhcpcd.render(params)
+      return(self.write_sysfile('/etc/dhcpcd.conf',dhcpcd_file_content))
 
    # ------------------------
    def set_dhcp(self):
@@ -54,7 +54,7 @@ class DHCP:
 
       rtn = os.system('mount -o rw,remount /')
       if rtn != 0:
-         raise FileSysError("Cannot remount rw root partition")
+         raise SystemError("Cannot remount rw root partition")
 
       with open(fspec, 'w+') as fid:
          fid.write(contents)
@@ -65,4 +65,4 @@ class DHCP:
       if self.ro_flag:
          rtn = os.system('mount -o ro,remount /')
          if rtn != 0:
-            raise FileSysError("Cannot remount ro root partition")
+            raise SystemError("Cannot remount ro root partition")
