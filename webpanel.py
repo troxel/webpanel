@@ -60,7 +60,7 @@ class PyServ(object):
       nic_info = sysinfo.get_iface_info()
 
       host_info = sysinfo.get_host_info()
-
+      pprint.pprint(host_info)
       data_hsh.update(host_info)
 
       trex = TemplateRex(fname='t_index.html')
@@ -136,50 +136,65 @@ class PyServ(object):
       if params['ip_method'] == 'static':
 
          # --------- Validate input   ---------
-         err_lst = self.netconf_validate(params)
+         err_hsh = self.netconf_validate(params)
 
-         if err_lst:
+         if err_hsh:
             trex_err = TemplateRex(fname='t_netconf_err.html')
-            for key in err_lst:
+            for key in err_hsh:
                print("key ->",key," ",params[key])
-               trex_err.render_sec("err_blk",{'key':key, 'val':params[key]})
+               trex_err.render_sec("err_blk",{'key':key, 'val':params[key], 'msg':err_hsh[key]})
 
             trex_err.render_sec('content')
+
             return(trex_err.render())
          # -------------
 
          modconf.set_static(params)
 
-         modconf.set_hostname(params['hostname'])
+         modconf.set_hostname(params['hostname'], params['ip_address'])
 
       else:
 
          modconf.set_dhcp()
 
-      ##modconf.reboot()
+      trex_redirect = TemplateRex(fname='t_redirect.html')
+      page = trex_redirect.render({'msg':"Rebooting... please wait",'refresh':"10; url=/"})
 
-      print("doing a redirect")
-      raise cherrypy.HTTPRedirect("/")
+      modconf.reboot()
+
+      return(page)
+
+      #print("doing a redirect")
+      #raise cherrypy.HTTPRedirect("/")
 
    # ------------------------
    def netconf_validate(self,params):
 
-      err_lst = []
+      err_hsh = {}
 
       for key in ('ip_address','gateway','dns_server_0','dns_server_1'):
-         
-         
+
          try:
             ip_ckh = ipaddress.ip_address(params[key])
          except:
             if key == 'dns_server_1' and params[key] == '': continue
-            err_lst.append(key)   # assumes id == name in input html
+            err_hsh[key] = "Not valid IP address"   # assumes id == name in input html
 
       cidr = int(params['cidr'])
       if ( cidr < 1 or cidr > 31):
-         err_lst.append('cidr')
+         err_hsh['cidr'] = "Must integer between 1 and 31"
 
-      return(err_lst)
+      if re.search('\.',params['hostname']):
+         err_hsh['hostname'] = 'Invalid Hostname'
+
+      return(err_hsh)
+
+   # ------------------------
+   @cherrypy.expose
+   def certificate(self,err_struct=""):
+      return('In Progress')
+
+
 
    # --------------------------------------------
    # utility functions

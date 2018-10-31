@@ -25,12 +25,12 @@ def get_iface_info():
 
    for if_name in if_lst:
       ifstruct = net.ifaddresses(if_name)
-      
-      try: 
+
+      try:
          tmp_hsh = ifstruct[net.AF_INET][0]  # loads addr,broadcast,netmask
       except:
-         continue 
-      
+         continue
+
       if_hsh[if_name] = {}
       if_hsh[if_name]['ip_address'] = tmp_hsh['addr']
       if_hsh[if_name]['broadcast']  = tmp_hsh['broadcast']
@@ -62,7 +62,13 @@ def get_host_info():
          uptime_seconds = float(fid.readline().split()[0])
          uptime_str = str(datetime.timedelta(seconds = uptime_seconds))
          host_hsh['uptime'] = re.sub('\.\d+$','',uptime_str)
-   except:
+   except Exception as err:
+      pass
+
+   try:
+      with open('/proc/loadavg', 'r') as fid:
+         (host_hsh['ld1'],host_hsh['ld5'],host_hsh['ld10']) = fid.readline().split()[0:3]
+   except Exception as err:
       pass
 
    try:

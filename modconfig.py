@@ -37,9 +37,20 @@ class DHCP:
       self.write_sysfile('/etc/dhcpcd.conf',dhcpcd_file_content)
 
    # ------------------------
-   def reboot(self,delay=2):
+   def set_hostname(self, hostname, ip):
 
-      os.command( 'showdown -t {} -r -f'.format(delay) )
+      self.write_sysfile('/etc/hostname',hostname)
+
+      # Write to host file
+      trex_hosts = TemplateRex(fname='/etc/hosts-template',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      trex_hosts.render_sec('hostname',{'ip':ip,'hostname':hostname})
+      host_content = trex_hosts.render()
+      self.write_sysfile('/etc/hosts',host_content)
+
+   # ------------------------
+   def reboot(self,delay='now'):
+
+      os.system( '/sbin/shutdown -t {} -r -f'.format(delay) )
 
 
    # -----------------------
@@ -65,4 +76,4 @@ class DHCP:
       if self.ro_flag:
          rtn = os.system('mount -o ro,remount /')
          if rtn != 0:
-            raise SystemError("Cannot remount ro root partition")
+            raise SystemError("Cannot remount ro root partition ",rtn)

@@ -2,22 +2,23 @@
 <!-- BEGIN=content -->
 <div class="row">
    <div class="col">
-      <h3 style="color:">Network Configuration Error</h3>
+      <h3 style="color:red">Network Configuration Error</h3>
       <hr>
    </div>
 </div>
 
 <div class="row">
    <div class="col">
-      <h4>$err_msg</h4>
+      <h4 style="color:red;">$err_msg</h4>
    </div>
 </div>
 <br>
 <div class="row">
    <div class="col-7">
-      <table class="table-sm">
+      <table class="table-sm table-striped">
+      <tr><th>Element</th><th style="color:red">Value</th><th style="color:red">Error</th></tr>
       <!-- BEGIN=err_blk -->
-      <tr><td>$key</td><td style="color:red">$val</td></tr>
+      <tr><td>$key :</td><td style="color:red">$val :</td><td style="color:red">$msg</td></tr>
       <!-- END=err_blk -->
       </table>
    </div>
