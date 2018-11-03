@@ -1,33 +1,23 @@
 <!-- BASE=t_layout.html -->
 <!-- BEGIN=content -->
 <style>
-   td.low { background-color:lightblue;}
-   td.med { background-color:lightgreen;}
-   td.high { background-color:orangered ;}
-   tr.odd { color: #000000;}
-   tr.even { color:#0000A7;}
-   div.i
-   d { font-size:1.7em }
-   div.calc_block { border: 1px #443333 solid; background-color:#AABBAA; }
-   div.raw_block { border: 1px #443333 solid; background-color:#AABBDD; }
-   div.ll { margin-top:7px; font-size:21px; color:red; }
-
-   #flot-t_plot{
-      height:300px;
-
-    }
 
 </style>
 
 <div class="row">
    <div class="col-7">
-      <h3>Host Information</h3>
-      <table class="table table-bordered table-striped">
-         <tr><th>Hostname</th><td>$hostname</td></tr>
-         <tr><th>Release</th><td>$release</td></tr>
-         <tr><th>Uptime</th><td>$uptime</td></tr>
-         <tr><th>Load Avg <span class="small">(1,5,10 minutes)</span></th><td>$ld1 : $ld5 : $ld10</td></tr>
-      </table>
+      <h3>SSL Self Signed Cert</h3>
+   </div>
+</div>
+<div class="row">
+   <div class="col-7">
+      <!-- BEGIN=gen_cert_btn -->
+      <input type="submit" class="btn btn-info" name="action_gen_cert" value="Generate New Self-Signed Cert">
+      <!-- END=gen_cert_btn -->
+
+      <!-- BEGIN=regen_cert_btn -->
+      <input type="submit" class="btn btn-info"  name="action_gen_cert" value="ReGenerate New Self-Signed Cert">
+      <!-- END=regen_cert_btn -->
    </div>
 </div>
 

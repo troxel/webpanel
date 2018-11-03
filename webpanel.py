@@ -192,8 +192,15 @@ class PyServ(object):
    # ------------------------
    @cherrypy.expose
    def certificate(self,err_struct=""):
-      return('In Progress')
 
+      data_hsh = sysinfo.get_host_info()
+
+      trex = TemplateRex(fname='t_certificate.html')
+
+      trex.render_sec('gen_cert_btn')
+      trex.render_sec('content',data_hsh)
+
+      return(trex.render())
 
 
    # --------------------------------------------
