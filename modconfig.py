@@ -50,7 +50,7 @@ class DHCP:
    # ------------------------
    def reboot(self,delay='now'):
 
-      os.system( '/sbin/shutdown -t {} -r -f'.format(delay) )
+      os.system( '/sbin/shutdown -r {}'.format(delay) )
 
 
    # -----------------------
