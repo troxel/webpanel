@@ -105,7 +105,7 @@ def is_dhcp(nic_name='eth0'):
    # results. I could parse the dhcpcd.conf file but bet to let the dhcpcd5
    # command do that for us.
 
-   rtn = subprocess.check_output(['/sbin/dhcpcd','--test'])
+   rtn = subprocess.check_output(['/sbin/dhcpcd','--test'],stderr=subprocess.STDOUT)
 
    pprint(rtn)
 
@@ -113,21 +113,25 @@ def is_dhcp(nic_name='eth0'):
    #eth0: leased 130.46.82.68 for 172800 seconds <- dhcp
    #eth0: using static address 130.46.82.68/23   <- static
 
-   pattern = "{}: leased".format(nic_name)
-   match = re.search(pattern.encode(),rtn)
-   if match:
+
+   pattern0 = "{}: leased".format(nic_name)
+   match0 = re.search(pattern0.encode(),rtn)
+   if match0:
       print('matched dhcp!')
       return True
 
-   pattern = "{}: using static".format(nic_name)
-   match = re.search(pattern.encode(),rtn)
-   if match:
+   pattern1 = "{}: using static".format(nic_name)
+   match1 = re.search(pattern1.encode(),rtn)
+   if match1:
       print('matched static!')
       return False
 
+   # debug stuff
    print('Nomatch')
-   print(pattern)
-   pprint(match)
+   print(pattern0)
+   pprint(match0)
+   print(pattern1)
+   pprint(match1)
    pprint(rtn)
 
    raise SystemError
