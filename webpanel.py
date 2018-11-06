@@ -99,7 +99,10 @@ class PyServ(object):
       data_hsh.update(nic_info)
       data_hsh.update(host_info)
 
-      if sysinfo.is_dhcp():
+      # Still holding on the possibility of more than one nic
+      nic_name = list(nic_info.keys())[0]
+
+      if sysinfo.is_dhcp(nic_name):
          data_hsh['dhcp_checked'] = 'checked'
       else:
          data_hsh['static_checked'] = 'checked'
@@ -131,7 +134,8 @@ class PyServ(object):
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
 
-      modconf = modconfig.DHCP(ro_flag=True)
+      #modconf = modconfig.DHCP(ro_flag=True)
+      modconf = modconfig.DHCP(ro_flag=False)
 
       if params['ip_method'] == 'static':
 
@@ -160,7 +164,7 @@ class PyServ(object):
       trex_redirect = TemplateRex(fname='t_redirect.html')
       page = trex_redirect.render({'msg':"Rebooting... please wait",'refresh':"10; url=/"})
 
-      modconf.reboot()
+      ##modconf.reboot()
 
       return(page)
 

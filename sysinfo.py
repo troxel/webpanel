@@ -7,6 +7,8 @@ import datetime
 import re
 import platform
 import distro
+import subprocess
+
 
 def __init__():
    version = 1.0;
@@ -94,16 +96,46 @@ def get_dns_info():
    return dns_srv
 
 # ------------------------
-def is_dhcp():
+def is_dhcp(nic_name='eth0'):
 
    # Surpisingly there is no unified way to determine if the current
    # ip is souced from dhcp or static. Add a series of checks
 
+   # Ok best method it os actually issue a dhcpcd command and check the
+   # results. I could parse the dhcpcd.conf file but bet to let the dhcpcd5
+   # command do that for us.
+
+   rtn = subprocess.check_output(['/sbin/dhcpcd','--test'])
+
+   pprint(rtn)
+
+   # Here is the significant line returned for each case
+   #eth0: leased 130.46.82.68 for 172800 seconds <- dhcp
+   #eth0: using static address 130.46.82.68/23   <- static
+
+   pattern = "{}: leased".format(nic_name)
+   match = re.search(pattern.encode(),rtn)
+   if match:
+      print('matched dhcp!')
+      return True
+
+   pattern = "{}: using static".format(nic_name)
+   match = re.search(pattern.encode(),rtn)
+   if match:
+      print('matched static!')
+      return False
+
+   print('Nomatch')
+   print(pattern)
+   pprint(match)
+   pprint(rtn)
+
+   raise SystemError
+
+   # Below doest work reliably.
    # Typical of dhcpcd5 raspberrian debian 9
-   if os.path.isfile('/var/lib/dhcpcd5/dhcpcd-eth0.lease'):
-      return True
+   #if os.path.isfile('/var/lib/dhcpcd5/dhcpcd-eth0.lease'):
+   #   return True
 
-   if os.path.isfile('/run/dhclient-eth0.pid'):
-      return True
-
-   return False
+   #if os.path.isfile('/run/dhclient-eth0.pid'):
+   #   return True
