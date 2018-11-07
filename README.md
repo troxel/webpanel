@@ -11,6 +11,7 @@ Python Modules
 distro
 netifaces
 netaddr
+cryptography
 
 Linux modules
 dhcpcd5 (must remove or disable conmann or other network managers)

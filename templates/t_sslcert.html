@@ -1,0 +1,74 @@
+<!-- BASE=t_layout.html -->
+<!-- BEGIN=content -->
+<style>
+ caption{caption-side: top;}
+ th {width:40%;}
+ table { width:100%}
+
+</style>
+
+<div class="row">
+   <div class="col-7">
+      <h2>SSL Information </h2>
+   </div>
+</div>
+<hr>
+<div class="row">
+   <div class="col">
+      <!-- BEGIN=cert_server -->
+      <h3>Server Certificate</h3>
+      <table class="table-striped table-bordered table-success">
+         <caption class="table-success" align="top">Subject</caption>
+         <tr><th>countryName</th><td>$countryName</td></tr>
+         <tr><th>organizationName</th><td>$organizationName</td></tr>
+         <tr><th>organizationalUnitName</th><td>$organizationalUnitName</td></tr>
+         <tr><th>commonName</th><td>$commonName</td></tr>
+      </table>
+      <br><table  class="table-striped table-bordered table-primary">
+         <caption class="table-primary" align="top">Other</caption>
+         <tr><th>issuer commonName</th><td>$issuer_commonName</td></tr>
+         <tr><th>valid_to</th><td>$valid_to</td></tr>
+      </table>
+      <br>
+      <table class="table-striped table-bordered table-info">
+         <caption class="table-info" align="top">Subject Alt Names</caption>
+         <!-- BEGIN=subj_alt_name -->
+         <tr><th> $key </th><td> $val </td></tr>
+         <!-- END=subj_alt_name -->
+      </table>
+      <!-- END=cert_server -->
+      <br>
+      <a href="/sslcert_gen_new_server" class="btn btn-info btn-block" role="button" >Generate New Server Cert</a>
+   </div>
+   <div class="col">
+      <h3>Certificate Authority Certificate</h3>
+      <!-- BEGIN=cert_CA -->
+      <table class="table-striped table-bordered table-success">
+         <caption class="table-success" align="top">Subject</caption>
+         <tr><th>countryName</th><td>$countryName</td></tr>
+         <tr><th>organizationName</th><td>$organizationName</td></tr>
+         <tr><th>organizationalUnitName</th><td>$organizationalUnitName</td></tr>
+         <tr><th>commonName</th><td>$commonName</td></tr>
+      </table>
+      <br><table  class="table-striped table-bordered table-primary">
+         <caption class="table-primary" align="top">Other</caption>
+         <tr><th>issuer commonName</th><td>$issuer_commonName</td></tr>
+         <tr><th>valid_to</th><td>$valid_to</td></tr>
+      </table>
+      <br>
+      <a href="/certs/webpanelCA.crt" class="btn btn-info btn-block" role="button" >Download CA Cert</a>
+      <div class="small">Add this to the trusted CA certs for SSL without warnings</div>
+      <!-- END=cert_CA -->
+   </div>
+</div>
+
+<div class="row">
+   <div class="col-xs-12" style="text-align:right;font-size:.7em;margin-top:50px;">
+      Version: $version
+   </div>
+</div>
+
+<script type="text/javascript">
+
+</script>
+<!-- END=content -->

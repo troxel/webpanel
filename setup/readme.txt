@@ -1,4 +1,3 @@
-
 Steps to ro root partition... 
 
 Raspberry PI

@@ -14,6 +14,7 @@ import collections
 import re
 import datetime
 import subprocess
+import ssl
 
 import psutil
 
@@ -41,6 +42,12 @@ class PyServ(object):
    def __init__(self):
 
       self.version = 1.0;
+
+      if os.path.isfile('./DEV_MODE'):
+         self.dev_mode = True
+
+      self.dir = {}
+      self.dir['cert'] = './cert'
 
       # Create deque for tail
       self.tail_max = 20
@@ -128,14 +135,16 @@ class PyServ(object):
    @cherrypy.expose
    def netconf_rtn(self, **params):
 
-      # This takes the extra step to handle multiple interfaces. Adds
-      # complexity but there cases when there are multiple interfaces.
-
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
 
-      #modconf = modconfig.DHCP(ro_flag=True)
-      modconf = modconfig.DHCP(ro_flag=False)
+      # This takes the extra step to handle multiple interfaces. Adds
+      # complexity but there cases when there are multiple interfaces.
+
+      if self.dev_mode:
+         modconf = modconfig.DHCP(ro_flag=False)
+      else:
+         modconf = modconfig.DHCP(ro_flag=True)
 
       if params['ip_method'] == 'static':
 
@@ -162,7 +171,8 @@ class PyServ(object):
          modconf.set_dhcp()
 
       trex_redirect = TemplateRex(fname='t_redirect.html')
-      page = trex_redirect.render({'msg':"Rebooting... please wait",'refresh':"10; url=/"})
+      page = trex_redirect.render_sec('content',{'msg':"Reconfiguring... please wait"})
+      page = trex_redirect.render({'refresh':"2; url=/netconf"})
 
       ##modconf.reboot()
 
@@ -195,16 +205,55 @@ class PyServ(object):
 
    # ------------------------
    @cherrypy.expose
-   def certificate(self,err_struct=""):
+   def sslcert(self):
 
       data_hsh = sysinfo.get_host_info()
 
-      trex = TemplateRex(fname='t_certificate.html')
+      # Using undocumented and stealth function in the ssl lib
+      cert_fspec = os.path.join(self.dir['cert'],'webpanel.crt')
+      cert_server = ssl._ssl._test_decode_cert(os.path.join(self.dir['cert'],'webpanel.crt'))
+      cert_CA = ssl._ssl._test_decode_cert(os.path.join(self.dir['cert'],'webpanelCA.crt'))
+
+      trex = TemplateRex(fname='t_sslcert.html')
+
+      # First server cert
+      for san in cert_server['subjectAltName']:
+         trex.render_sec('subj_alt_name',{'key':san[0],'val':san[1]})
+
+      subject = cert_server['subject']
+      subj_hsh = {}
+      for subj in subject:
+         subj_hsh[subj[0][0]] = subj[0][1]
+
+      issuer = cert_server['issuer']
+      subj_hsh['issuer_commonName'] = issuer[4][0][1]
+
+      subj_hsh['valid_to'] = cert_server['notAfter']
+
+      trex.render_sec('cert_server',subj_hsh)
+
+      # Then CA cert
+      subject = cert_CA['subject']
+      subj_hsh = {}
+      for subj in subject:
+         subj_hsh[subj[0][0]] = subj[0][1]
+
+      issuer = cert_CA['issuer']
+      subj_hsh['issuer_commonName'] = issuer[4][0][1]
+
+      subj_hsh['valid_to'] = cert_CA['notAfter']
+
+      trex.render_sec('cert_CA',subj_hsh)
+
 
       trex.render_sec('gen_cert_btn')
       trex.render_sec('content',data_hsh)
 
       return(trex.render())
+
+   @cherrypy.expose
+   def sslcert_gen_new_server(self):
+      return 'About new cert'
 
 
    # --------------------------------------------
