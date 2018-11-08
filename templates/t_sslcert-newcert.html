@@ -1,0 +1,54 @@
+<!-- BASE=t_layout.html -->
+<!-- BEGIN=content -->
+<style>
+ caption{caption-side: top;}
+ th {width:40%;}
+ table { width:100%}
+
+</style>
+
+<div class="row">
+   <div class="col-7">
+      <h2>Generate New Server SSL Certificate </h2>
+   </div>
+</div>
+<hr>
+<form action="/sslcert/newcert_rtn">
+<div class="row">
+   <div class="col-7">
+
+      <!-- BEGIN=subject -->
+      <table class="table-striped table-bordered table-success">
+         <caption class="table-success" align="top">Subject</caption>
+         <tr><th>countryName</th>
+             <td><input type="text" size="2" maxlength="2"" value="$countryName" name="countryName"></td></tr>
+         <tr><th>organizationName</th>
+             <td><input type="text" value="$organizationName" name="organizationName"></td></tr>
+         <tr><th>organizationalUnitName</th>
+             <td><input type="text" value="$organizationalUnitName" name="$organizationalUnitName"></td></tr>
+         <tr><th>commonName</th>
+             <td><input type="text" value="$commonName" name="$commonName" ></td></tr>
+      </table>
+      <!-- END=subject -->
+      <br>
+      <table class="table-striped table-bordered table-info">
+         <caption class="table-info" align="top">Subject Alt Names</caption>
+         <!-- BEGIN=subj_alt_name -->
+         <tr><th> $key </th><td> <input type="text" name="$key" value="$val" size="27"> </td></tr>
+         <!-- END=subj_alt_name -->
+      </table>
+      <br>
+      <input type="submit" class="btn btn-info" value="Create New Cert">
+   </div>
+</div>
+
+<div class="row">
+   <div class="col-xs-12" style="text-align:right;font-size:.7em;margin-top:50px;">
+      Version: $version
+   </div>
+</div>
+
+<script type="text/javascript">
+
+</script>
+<!-- END=content -->

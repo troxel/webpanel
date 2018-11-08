@@ -17,6 +17,8 @@
    <div class="col">
       <!-- BEGIN=cert_server -->
       <h3>Server Certificate</h3>
+
+      <!-- BEGIN=subject -->
       <table class="table-striped table-bordered table-success">
          <caption class="table-success" align="top">Subject</caption>
          <tr><th>countryName</th><td>$countryName</td></tr>
@@ -24,6 +26,7 @@
          <tr><th>organizationalUnitName</th><td>$organizationalUnitName</td></tr>
          <tr><th>commonName</th><td>$commonName</td></tr>
       </table>
+      <!-- END=subject -->
       <br><table  class="table-striped table-bordered table-primary">
          <caption class="table-primary" align="top">Other</caption>
          <tr><th>issuer commonName</th><td>$issuer_commonName</td></tr>
@@ -38,11 +41,12 @@
       </table>
       <!-- END=cert_server -->
       <br>
-      <a href="/sslcert_gen_new_server" class="btn btn-info btn-block" role="button" >Generate New Server Cert</a>
+      <a href="/sslcert/newcert" class="btn btn-info btn-block" role="button" >Generate New Server Cert</a>
    </div>
    <div class="col">
       <h3>Certificate Authority Certificate</h3>
       <!-- BEGIN=cert_CA -->
+      <!-- BEGIN=subject -->
       <table class="table-striped table-bordered table-success">
          <caption class="table-success" align="top">Subject</caption>
          <tr><th>countryName</th><td>$countryName</td></tr>
@@ -50,6 +54,7 @@
          <tr><th>organizationalUnitName</th><td>$organizationalUnitName</td></tr>
          <tr><th>commonName</th><td>$commonName</td></tr>
       </table>
+      <!-- END=subject -->
       <br><table  class="table-striped table-bordered table-primary">
          <caption class="table-primary" align="top">Other</caption>
          <tr><th>issuer commonName</th><td>$issuer_commonName</td></tr>
