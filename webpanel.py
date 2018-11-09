@@ -79,7 +79,7 @@ class PyServ(object):
       nic_info = sysinfo.get_iface_info()
 
       host_info = sysinfo.get_host_info()
-      pprint.pprint(host_info)
+
       data_hsh.update(host_info)
 
       trex = TemplateRex(fname='t_index.html')
@@ -92,6 +92,11 @@ class PyServ(object):
       trex.render_sec('content',data_hsh)
 
       page = trex.render(data_hsh)
+
+      print("--------------")
+      print(cherrypy.request.headers)
+      print("--------------")
+
 
       return page
 
@@ -248,8 +253,10 @@ class PyServ(object):
 ####### Class SSLCert #############
 class SSLCert(PyServ):
 
-   #def __init__(self):
-   #   pass
+   from gencerts import GenCerts
+
+   def __init__(self):
+      self.certobj = self.GenCerts(dir_root='./cert')
 
    # ------------------------
    @cherrypy.expose
@@ -259,16 +266,16 @@ class SSLCert(PyServ):
 
       trex = TemplateRex(fname='t_sslcert.html')
 
-      cert_hsh = self.parse_cert(os.path.join(self.dir['cert'],'webpanel.crt'))
-      ca_hsh = self.parse_cert(os.path.join(self.dir['cert'],'webpanelCA.crt'))
+      cert_hsh = self.certobj.parse_cert('webpanel.crt')
+      ca_hsh = self.certobj.parse_cert('webpanelCA.crt')
 
       # First server cert
       # subj alt name really important for x509 v3
-      for ip in cert_hsh['subjectAltName']['ip_lst']:
-         trex.render_sec('subj_alt_name',{'key':'IP_Address','val':ip})
+      for inx,ip in enumerate(cert_hsh['subjectAltName']['ip_lst']):
+         trex.render_sec('subj_alt_name_ip',{'inx':inx, 'val':ip})
 
-      for dns in cert_hsh['subjectAltName']['dns_lst']:
-         trex.render_sec('subj_alt_name',{'key':'DNS','val':dns})
+      for inx,dns in enumerate(cert_hsh['subjectAltName']['dns_lst']):
+         trex.render_sec('subj_alt_name_dns',{'inx':inx, 'val':dns})
 
       trex.render_sec('subject',cert_hsh['subject'])
       trex.render_sec('cert_server',cert_hsh)
@@ -287,76 +294,34 @@ class SSLCert(PyServ):
    def newcert(self,**params):
       trex = TemplateRex(fname='t_sslcert-newcert.html')
 
-      cert_hsh = self.parse_cert(os.path.join(self.dir['cert'],'webpanel.crt'))
+      cert_hsh = self.certobj.parse_cert('webpanel.crt')
 
       trex.render_sec('subject',cert_hsh['subject'])
 
-      for ip in cert_hsh['subjectAltName']['ip_lst']:
-         trex.render_sec('subj_alt_name',{'key':'IP_Address','val':ip})
+      for inx in range(4):
+         try:    ip = cert_hsh['subjectAltName']['ip_lst'][inx]
+         except: ip = ""
 
-      for dns in cert_hsh['subjectAltName']['dns_lst']:
-         trex.render_sec('subj_alt_name',{'key':'DNS','val':dns})
+         trex.render_sec('subj_alt_name_ip',{'inx':inx,'val':ip})
+
+      for inx in range(4):
+         try:    dns = cert_hsh['subjectAltName']['dns_lst'][inx]
+         except: dns = ""
+
+         trex.render_sec('subj_alt_name_dns',{'inx':inx,'val':dns})
 
       trex.render_sec('content')
       return(trex.render() )
 
-      pprint.pprint(cert_hsh)
-      return "<pre>" + pprint.pformat(cert_hsh)
 
    #--------------------------------------
    @cherrypy.expose
    def newcert_rtn(self,**params):
+      #pprint.pprint(params)
 
-      trex = TemplateRex(fname='t_sslcert-newcert.html')
+      rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
 
-      cert_hsh = self.parse_cert(os.path.join(self.dir['cert'],'webpanel.crt'))
-
-      trex.render_sec('subject',cert_hsh['subject'])
-
-      for ip in cert_hsh['subjectAltName']['ip_lst']:
-         trex.render_sec('subj_alt_name',{'key':'IP_Address','val':ip})
-
-      for dns in cert_hsh['subjectAltName']['dns_lst']:
-         trex.render_sec('subj_alt_name',{'key':'DNS','val':dns})
-
-      trex.render_sec('content')
-      return(trex.render() )
-
-      pprint.pprint(cert_hsh)
-      return "<pre>" + pprint.pformat(cert_hsh)
-
-   # -----------------------------------------
-   # decode struct to more useful hash
-   def parse_cert(self,fspec):
-
-      # Using undocumented stealth function in the ssl lib
-      # in retrospect might have been easier to do my parse
-      cert_struct = ssl._ssl._test_decode_cert(fspec)
-
-      pprint.pprint(cert_struct)
-
-      cert_hsh = {}
-      cert_hsh['subjectAltName'] = {}
-      cert_hsh['subjectAltName']['ip_lst'] = []
-      cert_hsh['subjectAltName']['dns_lst'] = []
-
-      # subjectAltName not in CA cert and v1 certs
-      if 'subjectAltName' in cert_struct:
-         for san in cert_struct['subjectAltName']:
-            if san[0] == 'IP Address':
-               cert_hsh['subjectAltName']['ip_lst'].append(san[1])
-            elif san[0] == 'DNS':
-               cert_hsh['subjectAltName']['dns_lst'].append(san[1])
-
-      cert_hsh['subject'] = {}
-      for subj in cert_struct['subject']:
-         cert_hsh['subject'][subj[0][0]] = subj[0][1]
-
-      cert_hsh['issuer_commonName'] = cert_struct['issuer'][4][0][1]
-      cert_hsh['valid_to'] = cert_struct['notAfter']
-
-      return cert_hsh
-
+      raise cherrypy.HTTPRedirect("/sslcert")
 
 ####### End of Class SSLCert #############
 

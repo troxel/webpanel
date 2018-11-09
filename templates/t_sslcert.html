@@ -1,7 +1,7 @@
 <!-- BASE=t_layout.html -->
 <!-- BEGIN=content -->
 <style>
- caption{caption-side: top;}
+ caption{caption-side: top; font-size:1.1em; font-variant:small-caps; color:black;}
  th {width:40%;}
  table { width:100%}
 
@@ -20,7 +20,7 @@
 
       <!-- BEGIN=subject -->
       <table class="table-striped table-bordered table-success">
-         <caption class="table-success" align="top">Subject</caption>
+         <caption class="table-success" align="top"> &nbsp; Subject</caption>
          <tr><th>countryName</th><td>$countryName</td></tr>
          <tr><th>organizationName</th><td>$organizationName</td></tr>
          <tr><th>organizationalUnitName</th><td>$organizationalUnitName</td></tr>
@@ -28,16 +28,20 @@
       </table>
       <!-- END=subject -->
       <br><table  class="table-striped table-bordered table-primary">
-         <caption class="table-primary" align="top">Other</caption>
+         <caption class="table-primary" align="top"> &nbsp; Other</caption>
          <tr><th>issuer commonName</th><td>$issuer_commonName</td></tr>
-         <tr><th>valid_to</th><td>$valid_to</td></tr>
+         <tr><th>valid to</th><td>$valid_to</td></tr>
+         <tr><th>Generated on</th><td>$valid_from</td></tr>
       </table>
       <br>
       <table class="table-striped table-bordered table-info">
-         <caption class="table-info" align="top">Subject Alt Names</caption>
-         <!-- BEGIN=subj_alt_name -->
-         <tr><th> $key </th><td> $val </td></tr>
-         <!-- END=subj_alt_name -->
+         <caption class="table-info" align="top"> &nbsp; Subject Alt Names</caption>
+         <!-- BEGIN=subj_alt_name_ip -->
+         <tr><th> IP Address $inx</th><td> $val </td></tr>
+         <!-- END=subj_alt_name_ip -->
+         <!-- BEGIN=subj_alt_name_dns -->
+         <tr><th> DNS $inx</th><td> $val </td></tr>
+         <!-- END=subj_alt_name_dns -->
       </table>
       <!-- END=cert_server -->
       <br>
@@ -48,7 +52,7 @@
       <!-- BEGIN=cert_CA -->
       <!-- BEGIN=subject -->
       <table class="table-striped table-bordered table-success">
-         <caption class="table-success" align="top">Subject</caption>
+         <caption class="table-success" align="top"> &nbsp; Subject</caption>
          <tr><th>countryName</th><td>$countryName</td></tr>
          <tr><th>organizationName</th><td>$organizationName</td></tr>
          <tr><th>organizationalUnitName</th><td>$organizationalUnitName</td></tr>
@@ -56,13 +60,15 @@
       </table>
       <!-- END=subject -->
       <br><table  class="table-striped table-bordered table-primary">
-         <caption class="table-primary" align="top">Other</caption>
+         <caption class="table-primary" align="top"> &nbsp; Other</caption>
          <tr><th>issuer commonName</th><td>$issuer_commonName</td></tr>
          <tr><th>valid_to</th><td>$valid_to</td></tr>
       </table>
       <br>
-      <a href="/certs/webpanelCA.crt" class="btn btn-info btn-block" role="button" >Download CA Cert</a>
-      <div class="small">Add this to the trusted CA certs for SSL without warnings</div>
+      <a href="/cert/webpanelCA.crt" class="btn btn-info btn-block" role="button" >Download CA x509 Certificate</a>
+      <br>
+      <blockquote>This is the CA that is used to generate the server certificate. Download this certificate and import to
+      the trusted CA certificate store for SSL communications without warnings</blockquote>
       <!-- END=cert_CA -->
    </div>
 </div>

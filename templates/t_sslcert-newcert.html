@@ -15,7 +15,7 @@
 <hr>
 <form action="/sslcert/newcert_rtn">
 <div class="row">
-   <div class="col-7">
+   <div class="col-5">
 
       <!-- BEGIN=subject -->
       <table class="table-striped table-bordered table-success">
@@ -25,17 +25,20 @@
          <tr><th>organizationName</th>
              <td><input type="text" value="$organizationName" name="organizationName"></td></tr>
          <tr><th>organizationalUnitName</th>
-             <td><input type="text" value="$organizationalUnitName" name="$organizationalUnitName"></td></tr>
+             <td><input type="text" value="$organizationalUnitName" name="organizationalUnitName"></td></tr>
          <tr><th>commonName</th>
-             <td><input type="text" value="$commonName" name="$commonName" ></td></tr>
+             <td><input type="text" value="$commonName" name="commonName" ></td></tr>
       </table>
       <!-- END=subject -->
       <br>
       <table class="table-striped table-bordered table-info">
          <caption class="table-info" align="top">Subject Alt Names</caption>
-         <!-- BEGIN=subj_alt_name -->
-         <tr><th> $key </th><td> <input type="text" name="$key" value="$val" size="27"> </td></tr>
-         <!-- END=subj_alt_name -->
+         <!-- BEGIN=subj_alt_name_ip -->
+         <tr><th> IP Address $inx</th><td> <input type="text" name="ip_lst" value="$val" size="27"> </td></tr>
+         <!-- END=subj_alt_name_ip -->
+         <!-- BEGIN=subj_alt_name_dns -->
+         <tr><th> DNS $inx</th><td> <input type="text" name="dns_lst" value="$val" size="27"> </td></tr>
+         <!-- END=subj_alt_name_dns -->
       </table>
       <br>
       <input type="submit" class="btn btn-info" value="Create New Cert">

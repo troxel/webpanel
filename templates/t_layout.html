@@ -21,30 +21,30 @@
 
             </div>
          </div>
-         <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
-            <div class="collapse navbar-collapse" id="navbarSupportedContent">
-               <ul class="navbar-nav mr-auto">
-                  <li class="nav-item" id="home">
-                     <a class="nav-link" href="/">Home </a>
-                  </li>
-                  <li class="nav-item" id="netconf">
-                     <a id="control_disp" class="nav-link" href="/netconf">Network Configure</a>
-                  </li>
-                  <li class="nav-item" id="sslcert">
-                     <a id="" class="nav-link" href="/sslcert">SSL Cert</a>
-                  </li>
-                  <li class="nav-item" id="status">
-                     <a class="nav-link" href="/status">Status</a>
-                  </li>
-               </ul>
+         <div class="row" style="">
+            <div class="col-7" style="margin-left:10px;">
+
+               <nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+                  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                     <ul class="navbar-nav mr-auto">
+                        <li class="nav-item" id="home">
+                           <a class="nav-link" href="/">Home </a>
+                        </li>
+                        <li class="nav-item" id="netconf">
+                           <a id="control_disp" class="nav-link" href="/netconf">Network Configure</a>
+                        </li>
+                        <li class="nav-item" id="sslcert">
+                           <a id="sslcert" class="nav-link" href="/sslcert">SSL Cert</a>
+                        </li>
+                     </ul>
+                  </div>
+               </nav>
             </div>
-         </nav>
-      </div>
-      <div class="container" style="">
-         $content
-      </div>
-      <div class="container footer">
-      </div>
+         </div>
+               <br>
+               <div class="container" style="">
+                  $content
+               </div>
 
       <style>
          .err_id_state
@@ -57,10 +57,10 @@
 
          // Highlights menu active
          var pagePathName= window.location.pathname;
-         page = pagePathName.substring(pagePathName.lastIndexOf("/") + 1);
-         if ( page )
+         top_url = pagePathName.split("/")[1];
+         if ( top_url )
          {
-            $("#" + page).addClass('active')
+            $("#" + top_url).addClass('active')
          }
          else
          {

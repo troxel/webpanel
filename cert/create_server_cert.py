@@ -4,15 +4,22 @@ import os
 from templaterex import TemplateRex
 import time
 
+import socket
+hostname = socket.gethostname()
+fqdn     = socket.getfqdn(hostname)
+ip_addr   = socket.gethostbyname(hostname)
+
+
 trex = TemplateRex(fname='openssl-template.ini',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
 
 hsh = {}
+hsh['dir_root'] = '.'
 hsh['countryName'] = "US"
 hsh['organizationName'] = "IoT Embedded"
 hsh['commonName'] = "webpanel"
 
-hsh['ip_lst'] = [ "130.46.82.68", "127.0.0.1" ]
-hsh['dns_lst'] = [ "RaspberryPI-2", "RaspberryPI-2.nswccd.navy.mil" ]
+hsh['ip_lst'] = [ ip_addr, "127.0.0.1" ]
+hsh['dns_lst'] = [ hostname, fqdn ]
 
 for inx,ip in enumerate(hsh['ip_lst']):
    trex.render_sec('alt_name_ip',{'inx':inx,'ip':ip})
