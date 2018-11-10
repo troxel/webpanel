@@ -83,17 +83,20 @@ def get_host_info():
 # ------------------------
 def get_dns_info():
 
-   dns_srv = []
+   dns_hsh ={}
+   dns_hsh['nameserver'] = []
    try:
       fid = open('/etc/resolv.conf', 'r')
       for line in fid:
          columns = line.split()
          if columns[0] == 'nameserver':
-            dns_srv.extend(columns[1:])
+            dns_hsh['nameserver'].extend(columns[1:])
+         if columns[0] == 'domain':
+            dns_hsh['domain'] = columns[1:][0]
    except Exception as err:
          print("resolve.comf not found ",err, file=sys.stderr)
 
-   return dns_srv
+   return dns_hsh
 
 # ------------------------
 def is_dhcp(nic_name='eth0'):

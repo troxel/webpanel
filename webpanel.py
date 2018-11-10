@@ -29,6 +29,7 @@ args = parser.parse_args()
 
 import sysinfo
 import modconfig
+import gencerts
 
 # Local sub-modules
 sys.path.insert(0,'./packages')
@@ -37,7 +38,6 @@ from templaterex import TemplateRex
 import solo
 solo.chk_and_stopall(__file__)
 
-####### Class SSLCert #############
 class PyServ(object):
 
    def __init__(self):
@@ -54,20 +54,12 @@ class PyServ(object):
       self.tail_max = 20
       self.tail = collections.deque(maxlen=self.tail_max)
 
+      # cert stuff...
+      self.certobj = gencerts.GenCerts(dir_root='./cert')
+
       # Test stuff... erase later.
       self.cnt = 1
       self.inc=0
-
-   # ------------------------
-   # Setup dispatcher for second level urls
-   # Facilitates url like /sslcert/new_cert
-   def _cp_dispatch(self, vpath):
-
-      if vpath[0] == 'sslcert':
-            vpath.pop(0)
-            return SSLCert()
-
-      return vpath
 
    # ------------------------
    @cherrypy.expose
@@ -87,18 +79,7 @@ class PyServ(object):
       for nic in nic_info:
          trex.render_sec('nic_blk',nic_info[nic])
 
-      data_hsh['version'] = self.version
-
-      trex.render_sec('content',data_hsh)
-
-      page = trex.render(data_hsh)
-
-      print("--------------")
-      print(cherrypy.request.headers)
-      print("--------------")
-
-
-      return page
+      return( self.render_layout(trex,data_hsh) )
 
    # ------------------------
    @cherrypy.expose
@@ -114,11 +95,11 @@ class PyServ(object):
       host_info = sysinfo.get_host_info()
       dns_info  = sysinfo.get_dns_info()
 
-      for inx,srv in enumerate(dns_info):
+      for inx,srv in enumerate(dns_info['nameserver']):
          key = 'dns_server_{}'.format(inx)
          data_hsh[key] = srv
 
-      pprint.pprint(data_hsh)
+      ##pprint.pprint(data_hsh)
 
       data_hsh.update(nic_info)
       data_hsh.update(host_info)
@@ -140,13 +121,7 @@ class PyServ(object):
       for nic in nic_info:
          trex.render_sec('nic_blk',nic_info[nic])
 
-      data_hsh['version'] = self.version
-
-      trex.render_sec('content',data_hsh)
-
-      page = trex.render(data_hsh)
-
-      return page
+      return( self.render_layout(trex,data_hsh) )
 
    # ------------------------
    @cherrypy.expose
@@ -188,15 +163,11 @@ class PyServ(object):
          modconf.set_dhcp()
 
       trex_redirect = TemplateRex(fname='t_redirect.html')
-      page = trex_redirect.render_sec('content',{'msg':"Reconfiguring... please wait"})
-      page = trex_redirect.render({'refresh':"2; url=/netconf"})
+      data_hsh = {}
+      data_hsh['refresh'] = "2; url=netconf"
+      data_hsh['msg'] = "Reconfiguring... please wait"
 
-      ##modconf.reboot()
-
-      return(page)
-
-      #print("doing a redirect")
-      #raise cherrypy.HTTPRedirect("/")
+      return( self.render_layout(trex_redirect,data_hsh) )
 
    # ------------------------
    def netconf_validate(self,params):
@@ -220,47 +191,9 @@ class PyServ(object):
 
       return(err_hsh)
 
-   # --------------------------------------------
-   # utility functions
-   # --------------------------------------------
-   def _uptime(self):
-      with open('/proc/uptime', 'r') as fid:
-         uptime_seconds = float(fid.readline().split()[0])
-         uptime_str = str(datetime.timedelta(seconds = uptime_seconds))
-         uptime_str = re.sub('\.\d+$','',uptime_str)
-      return(uptime_str)
-
-   def _read_json(self,fspec,try_max=20):
-      try_inx = 1
-      if os.path.isfile(fspec):
-         while try_inx < try_max:
-            try:
-               fd = open(fspec,'r')
-               rtn = {}
-               rtn['json'] = json.loads(fd.read())
-               rtn['stat'] = os.stat(fspec)
-               fd.close()
-               return(rtn)
-            except:
-               try_inx = try_inx + 1
-               print("Unexpected error:", sys.exc_info()[0])
-               print(traceback.format_exc())
-      print(">>> {}".format(try_inx))
-      return(False)
-
-####### End of Class PyServ #######
-
-####### Class SSLCert #############
-class SSLCert(PyServ):
-
-   from gencerts import GenCerts
-
-   def __init__(self):
-      self.certobj = self.GenCerts(dir_root='./cert')
-
    # ------------------------
    @cherrypy.expose
-   def index(self):
+   def sslcert(self):
 
       data_hsh = sysinfo.get_host_info()
 
@@ -284,47 +217,78 @@ class SSLCert(PyServ):
       trex.render_sec('subject',ca_hsh['subject'])
       trex.render_sec('cert_CA',ca_hsh)
 
-      ##trex.render_sec('gen_cert_btn')
-      trex.render_sec('content',data_hsh)
-
-      return(trex.render() )
+      return( self.render_layout(trex,data_hsh) )
 
    #--------------------------------------
    @cherrypy.expose
-   def newcert(self,**params):
+   def sslcert_newcert(self,**params):
       trex = TemplateRex(fname='t_sslcert-newcert.html')
 
       cert_hsh = self.certobj.parse_cert('webpanel.crt')
 
+      nic_info  = sysinfo.get_iface_info()
+      host_info = sysinfo.get_host_info()
+      dns_info  = sysinfo.get_dns_info()
+
       trex.render_sec('subject',cert_hsh['subject'])
 
-      for inx in range(4):
-         try:    ip = cert_hsh['subjectAltName']['ip_lst'][inx]
-         except: ip = ""
+      # Use actual ip address an not what is in current cert. If nic is not eth0 trouble...
+      try:
+         trex.render_sec('subj_alt_name_ip',{'inx':0,'val':nic_info['eth0']['ip_address']})
+      except:
+         trex.render_sec('subj_alt_name_ip',{'inx':0,'val':''})
 
-         trex.render_sec('subj_alt_name_ip',{'inx':inx,'val':ip})
+      trex.render_sec('subj_alt_name_ip',{'inx':1,'val':'127.0.0.1'})
+      trex.render_sec('subj_alt_name_ip',{'inx':2,'val':''})
+      trex.render_sec('subj_alt_name_ip',{'inx':3,'val':''})
 
-      for inx in range(4):
-         try:    dns = cert_hsh['subjectAltName']['dns_lst'][inx]
-         except: dns = ""
+      try:
+         trex.render_sec('subj_alt_name_dns',{'inx':0,'val':host_info['hostname']})
+      except:
+         trex.render_sec('subj_alt_name_dns',{'inx':0,'val':''})
 
-         trex.render_sec('subj_alt_name_dns',{'inx':inx,'val':dns})
+      try:
+         trex.render_sec('subj_alt_name_dns',{'inx':1,'val':"{}.{}".format(host_info['hostname'],dns_info['domain'])})
+      except:
+         trex.render_sec('subj_alt_name_dns',{'inx':1,'val':''})
 
-      trex.render_sec('content')
-      return(trex.render() )
+      trex.render_sec('subj_alt_name_dns',{'inx':2,'val':''})
+      trex.render_sec('subj_alt_name_dns',{'inx':3,'val':''})
 
+      return( self.render_layout(trex,{}) )
 
    #--------------------------------------
    @cherrypy.expose
-   def newcert_rtn(self,**params):
+   def sslcert_newcert_rtn(self,**params):
       #pprint.pprint(params)
 
       rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
 
-      raise cherrypy.HTTPRedirect("/sslcert")
+      trex_redirect = TemplateRex(fname='t_redirect.html')
+      data_hsh = {}
+      data_hsh['refresh'] = "2; url=sslcert/"
+      data_hsh['msg'] = "Generating New Key and Server Certificate... Please wait"
 
-####### End of Class SSLCert #############
+      return( self.render_layout(trex_redirect,data_hsh) )
 
+   # --------------------------------------------
+   # utility functions
+   # --------------------------------------------
+
+   # Common featured called at the end of each callback abstracted out
+   def render_layout(self,trex,data_hsh={}):
+
+      data_hsh['version'] = self.version
+
+      # local ip means nginx is handling the request - set baseref
+      if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
+         data_hsh['base_ref'] = '/webpanel/'
+      else:
+         data_hsh['base_ref'] = '/'
+
+      trex.render_sec('content',data_hsh)
+
+      return(trex.render(data_hsh))
 
 # ---------------------------------
 port = 9091
