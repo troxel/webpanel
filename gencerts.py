@@ -4,6 +4,8 @@ import os
 from templaterex import TemplateRex
 import time
 import ssl
+import subprocess
+import sys
 
 class GenCerts(object):
 
@@ -11,6 +13,7 @@ class GenCerts(object):
    def __init__(self,dir_root='./cert'):
 
       self.dir_root = dir_root
+      self.error_msg = ""
 
    #-----------------------------------------------
    def gen_server_cert(self,subj_hsh,ip_lst=[],dns_lst=[]):
@@ -66,11 +69,14 @@ class GenCerts(object):
 
       # Finally sign CSR and generate server cert
       fspec_crt = os.path.join(self.dir_root,'webpanel.crt')
-      ##cmd = "openssl ca -config openssl_cert.ini -batch -in webpanel.csr -out webpanel.crt"
-      cmd = "openssl ca -config {} -batch -in {} -out {}".format(fspec_ini,fspec_csr,fspec_crt)
-      rtn = os.system(cmd)
-      if rtn:
-         raise SystemError('openssl cmd error ',rtn)
+      options = "ca -config {} -batch -in {} -out {}".format(fspec_ini,fspec_csr,fspec_crt)
+      cmd_lst = ['openssl',"ca","-config",fspec_ini,"-batch","-in",fspec_csr,"-out",fspec_crt]
+
+      try:
+        rtn = subprocess.check_output(cmd_lst, stderr=subprocess.STDOUT)
+      except subprocess.CalledProcessError as e:
+          self.error_msg = e.output.decode(sys.getfilesystemencoding())
+          return False
 
       return(True)
 

@@ -222,7 +222,7 @@ class PyServ(object):
    #--------------------------------------
    @cherrypy.expose
    def sslcert_newcert(self,**params):
-      trex = TemplateRex(fname='t_sslcert-newcert.html')
+      trex = TemplateRex(fname='t_sslcert-newcert.html',dev_mode=True)
 
       cert_hsh = self.certobj.parse_cert('webpanel.crt')
 
@@ -232,7 +232,7 @@ class PyServ(object):
 
       trex.render_sec('subject',cert_hsh['subject'])
 
-      # Use actual ip address an not what is in current cert. If nic is not eth0 trouble...
+      # Use actual ip address and not what is in current cert. If nic is not eth0 trouble...
       try:
          trex.render_sec('subj_alt_name_ip',{'inx':0,'val':nic_info['eth0']['ip_address']})
       except:
@@ -261,20 +261,19 @@ class PyServ(object):
    @cherrypy.expose
    def sslcert_newcert_rtn(self,**params):
       #pprint.pprint(params)
+      # probably should add some validation
 
       rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
-
-      trex_redirect = TemplateRex(fname='t_redirect.html')
-      data_hsh = {}
-      data_hsh['refresh'] = "2; url=sslcert/"
-      data_hsh['msg'] = "Generating New Key and Server Certificate... Please wait"
-
-      return( self.render_layout(trex_redirect,data_hsh) )
+      if rtn == True:
+          self.redirect('sslcert/')
+      else:
+          raise cherrypy.HTTPError(500,self.certobj.error_msg)
 
    # --------------------------------------------
    # utility functions
    # --------------------------------------------
 
+   # --------------------------------------------
    # Common featured called at the end of each callback abstracted out
    def render_layout(self,trex,data_hsh={}):
 
@@ -289,6 +288,17 @@ class PyServ(object):
       trex.render_sec('content',data_hsh)
 
       return(trex.render(data_hsh))
+
+   # --------------------------------------------
+   def redirect(self,url):
+
+      # local ip means nginx is handling the request - set baseref
+      if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
+         url = '/webpanel/' + url
+
+      raise cherrypy.HTTPRedirect(url)
+
+
 
 # ---------------------------------
 port = 9091

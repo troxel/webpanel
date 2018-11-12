@@ -4,7 +4,6 @@
  caption{caption-side: top;}
  th {width:40%;}
  table { width:100%}
-
 </style>
 
 <div class="row">
@@ -13,9 +12,9 @@
    </div>
 </div>
 <hr>
-<form action="sslcert_newcert_rtn" method="POST">
+<form action="sslcert_newcert_rtn" id="submit_form" method="POST">
 <div class="row">
-   <div class="col-5">
+   <div id="newcert_form" class="col-7">
 
       <!-- BEGIN=subject -->
       <table class="table-striped table-bordered table-success">
@@ -41,7 +40,7 @@
          <!-- END=subj_alt_name_dns -->
       </table>
       <br>
-      <input type="submit" class="btn btn-info" value="Create New Cert">
+      <input type="submit" id="submit_btn" class="btn btn-info btn-block" value="Create New Cert">
    </div>
 </div>
 
@@ -52,6 +51,12 @@
 </div>
 
 <script type="text/javascript">
+
+$( "#submit_form" ).submit(function( event )
+{
+    $( "#submit_btn" ).prop("disabled",true);
+    $.LoadingOverlay("show", {background  : "rgba(255, 255, 255, 0.35)", text:"Generating Certificate"})
+});
 
 </script>
 <!-- END=content -->
