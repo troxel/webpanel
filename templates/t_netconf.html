@@ -16,7 +16,7 @@ th { width: 35%;}
       <hr>
    </div>
 </div>
-<form action="netconf_rtn" method="POST">
+<form action="netconf_rtn" id="submit_form" method="POST">
 
 <div class="row">
    <div class="col-4">
@@ -97,6 +97,11 @@ $( document ).ready(function() {
    set_disable_enable();
 });
 
+$( "#submit_form" ).submit(function( event )
+{
+    $( "#submit_btn" ).prop("disabled",true);
+    $.LoadingOverlay("show", {background  : "rgba(255, 255, 255, 0.35)", text:"Reconfiguring Interface"})
+});
 
 
 </script>

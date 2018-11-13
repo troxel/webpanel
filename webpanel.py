@@ -162,12 +162,14 @@ class PyServ(object):
 
          modconf.set_dhcp()
 
-      trex_redirect = TemplateRex(fname='t_redirect.html')
-      data_hsh = {}
-      data_hsh['refresh'] = "2; url=netconf"
-      data_hsh['msg'] = "Reconfiguring... please wait"
+      self.redirect('netconf/')
 
-      return( self.render_layout(trex_redirect,data_hsh) )
+      # found a better way
+      #trex_redirect = TemplateRex(fname='t_redirect.html')
+      #data_hsh = {}
+      #data_hsh['refresh'] = "2; url=netconf"
+      #data_hsh['msg'] = "Reconfiguring... please wait"
+      #return( self.render_layout(trex_redirect,data_hsh) )
 
    # ------------------------
    def netconf_validate(self,params):
