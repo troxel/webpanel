@@ -1,6 +1,10 @@
 # webpanel
 Provide generic web interface to facilitate setting network and related parameters for embedded linux and creating and installing a self-signed certificate. 
 
+# Screen Shots
+
+![Home Page](/doc/img/index.jpg)
+Home Page
 
 # Dependencies
 
