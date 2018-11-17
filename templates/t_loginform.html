@@ -1,0 +1,33 @@
+<!-- BASE=t_layout.html -->
+<!-- BEGIN=content -->
+<style>
+
+th { width:45%;}
+
+</style>
+
+<div class="row">
+   <div class="col-7">
+      <h3>Log In</h3>
+         <form method="post" action="/login">
+         <input type="hidden" name="from_page" value="$from_page" />
+            <h4 style="margin-top:10px;margin-bottom:20px;color:red">$msg</h4>
+            <table class="table">
+               <tr><td>Username:</td><td> <input type="text" name="username" value="$username" /></td></tr>
+               <tr><td>Password:</td><td> <input type="password" name="password" /> </td></tr>
+             </table>
+             <br /><br />
+            <input type="submit" value="Log in" />
+   </div>
+</div>
+
+<div class="row">
+   <div class="col-xs-12" style="text-align:right;font-size:.7em;margin-top:50px;">
+      Version: $version
+   </div>
+</div>
+
+<script type="text/javascript">
+
+</script>
+<!-- END=content -->

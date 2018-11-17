@@ -22,6 +22,8 @@ import ipaddress
 
 import traceback
 
+from html import escape
+
 import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-q", help="Run in embedded mode",action="store_true")
@@ -38,6 +40,9 @@ from templaterex import TemplateRex
 import solo
 solo.chk_and_stopall(__file__)
 
+# #########################################
+# Begin Main CherryPy Server Class
+# #########################################
 class PyServ(object):
 
    def __init__(self):
@@ -60,6 +65,9 @@ class PyServ(object):
       # Test stuff... erase later.
       self.cnt = 1
       self.inc=0
+
+      self.SESSION_KEY = 'webpanel_auth'
+
 
    # ------------------------
    @cherrypy.expose
@@ -86,6 +94,8 @@ class PyServ(object):
    def netconf(self,err_struct=""):
 
       data_hsh = {}
+
+      data_hsh['username'] = self.authorize()
 
       #if err_struct:
       #   data_hsh['err_msg'] = err_struct['err_msg'];
@@ -127,6 +137,8 @@ class PyServ(object):
    @cherrypy.expose
    def netconf_rtn(self, **params):
 
+      self.authorize()
+
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
 
@@ -163,13 +175,6 @@ class PyServ(object):
          modconf.set_dhcp()
 
       self.redirect('netconf/')
-
-      # found a better way
-      #trex_redirect = TemplateRex(fname='t_redirect.html')
-      #data_hsh = {}
-      #data_hsh['refresh'] = "2; url=netconf"
-      #data_hsh['msg'] = "Reconfiguring... please wait"
-      #return( self.render_layout(trex_redirect,data_hsh) )
 
    # ------------------------
    def netconf_validate(self,params):
@@ -224,6 +229,9 @@ class PyServ(object):
    #--------------------------------------
    @cherrypy.expose
    def sslcert_newcert(self,**params):
+
+      self.authorize()
+
       trex = TemplateRex(fname='t_sslcert-newcert.html',dev_mode=True)
 
       cert_hsh = self.certobj.parse_cert('webpanel.crt')
@@ -265,15 +273,72 @@ class PyServ(object):
       #pprint.pprint(params)
       # probably should add some validation
 
+      self.authorize()
+
       rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
       if rtn == True:
           self.redirect('sslcert/')
       else:
           raise cherrypy.HTTPError(500,self.certobj.error_msg)
 
+   #--------------------------------------
+   # Auth CallBacks
+   #--------------------------------------
+
+   @cherrypy.expose
+   def login(self, username="", password="", from_page="/"):
+
+      username = escape(username)
+      password = escape(password)
+      from_page = escape(from_page)
+
+      if username and password:
+         msg = self.check_credentials(username, password)
+         if msg == True:
+            cherrypy.session[self.SESSION_KEY] = cherrypy.request.login = username
+
+            # No return from redirect
+            self.redirect(from_page)
+
+      print(locals())
+
+      trex = TemplateRex(fname='t_loginform.html')
+      return( self.render_layout(trex,locals()) )
+
+
+   @cherrypy.expose
+   def logout(self, from_page="/"):
+       sess = cherrypy.session
+       username = sess.get(self.SESSION_KEY, None)
+       sess[self.SESSION_KEY] = None
+       if username:
+           cherrypy.request.login = None
+           self.on_logout(username)
+       raise cherrypy.HTTPRedirect(from_page or "/")
+
    # --------------------------------------------
    # utility functions
    # --------------------------------------------
+
+   # Include this at top of function to protect...
+   def authorize(self):
+
+      username = cherrypy.session.get(self.SESSION_KEY)
+      if username:
+         cherrypy.request.login = username
+      else:
+         self.redirect("login/?from_page={}".format(cherrypy.request.path_info))
+
+   # --------------------------------------------
+   # check credentials...
+   def check_credentials(self, username, password):
+       """Verifies credentials for username and password.
+       Returns None on success or a string describing the error on failure"""
+
+       if username in ('admin', 'root') and password == 'root':
+           return True
+       else:
+           return u"Incorrect username or password."
 
    # --------------------------------------------
    # Common featured called at the end of each callback abstracted out
@@ -300,16 +365,18 @@ class PyServ(object):
 
       raise cherrypy.HTTPRedirect(url)
 
-
-
-# ---------------------------------
+# #################################
 port = 9091
 if __name__ == '__main__':
 
-   #dir_session = './sessions'
-   #if not os.path.exists(dir_session):
-   #       print "making dir",dir_session
-   #       os.mkdir(dir_session)
+   dir_session = '/tmp/sessions'
+   if not os.path.exists(dir_session):
+          os.mkdir(dir_session)
+
+   cherrypy.config.update({'tools.sessions.on': True})
+   cherrypy.config.update({'tools.sessions.timeout': 99999})
+
+
    #import inspect
    #print(inspect.getfile(TemplateRex))
 
