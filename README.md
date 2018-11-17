@@ -3,7 +3,16 @@ Provide generic web interface to facilitate setting network and related paramete
 
 # Screen Shots
 
-![Home Page](docs/img/index.jpg)
+![Home Page](docs/img/index.jpg "Home Page")
+
+---
+
+![Home Page](docs/img/netconf.jpg "Net Configure")
+
+---
+
+![Home Page](docs/img/sslcert.jpg "SSL Cert Info")
+
 
 
 # Dependencies
