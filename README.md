@@ -3,8 +3,8 @@ Provide generic web interface to facilitate setting network and related paramete
 
 # Screen Shots
 
-![Home Page](/doc/img/index.jpg)
-Home Page
+![Home Page](docs/img/index.jpg)
+
 
 # Dependencies
 
