@@ -69,6 +69,11 @@ class PyServ(object):
       self.SESSION_KEY = 'webpanel_auth'
 
 
+
+   webpanel = WebPanel()
+
+
+
    # ------------------------
    @cherrypy.expose
    def index(self):
@@ -158,7 +163,6 @@ class PyServ(object):
          if err_hsh:
             trex_err = TemplateRex(fname='t_netconf_err.html')
             for key in err_hsh:
-               print("key ->",key," ",params[key])
                trex_err.render_sec("err_blk",{'key':key, 'val':params[key], 'msg':err_hsh[key]})
 
             trex_err.render_sec('content')
@@ -285,6 +289,7 @@ class PyServ(object):
    # Auth CallBacks
    #--------------------------------------
 
+   #--------------------------------------
    @cherrypy.expose
    def login(self, username="", password="", from_page="/"):
 
@@ -300,12 +305,10 @@ class PyServ(object):
             # No return from redirect
             self.redirect(from_page)
 
-      print(locals())
-
       trex = TemplateRex(fname='t_loginform.html')
-      return( self.render_layout(trex,locals()) )
+      return( self.render_layout(trex,locals() ) )
 
-
+   #--------------------------------------
    @cherrypy.expose
    def logout(self, from_page="/"):
        sess = cherrypy.session
@@ -327,7 +330,8 @@ class PyServ(object):
       if username:
          cherrypy.request.login = username
       else:
-         self.redirect("login/?from_page={}".format(cherrypy.request.path_info))
+         path_rel = cherrypy.request.path_info
+         self.redirect("login/?from_page={}".format(path_rel))
 
    # --------------------------------------------
    # check credentials...
@@ -363,7 +367,7 @@ class PyServ(object):
       if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
          url = '/webpanel/' + url
 
-      raise cherrypy.HTTPRedirect(url)
+      raise cherrypy.HTTPRedirect(url,302)
 
 # #################################
 port = 9091

@@ -1,0 +1,11 @@
+proc            /proc           proc    defaults          0       0
+PARTUUID=84ec088e-01  /boot           vfat    defaults,noatime,ro     0       2
+PARTUUID=84ec088e-02  /               ext4    defaults,noatime,ro  0       1
+# a swapfile is not a swap partition, no line here
+#   use  dphys-swapfile swap[on|off]  for that
+
+# Save the sd card
+tmpfs    /tmp    tmpfs    defaults,noatime,nosuid,size=5m    0 0
+tmpfs    /var/log    tmpfs    defaults,noatime,nosuid,size=20m    0 0
+
+
