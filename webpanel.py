@@ -51,6 +51,8 @@ class WebPanel(object):
 
       if os.path.isfile('./DEV_MODE'):
          self.dev_mode = True
+      else:
+          self.dev_mode = False
 
       self.dir = {}
       self.dir['cert'] = './cert'
