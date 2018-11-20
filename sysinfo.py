@@ -119,6 +119,12 @@ def is_dhcp(nic_name='eth0'):
    if match0:
       return True
 
+   # If booted in static and then transition to dhcpcd
+   pattern0 = "new_dhcp_lease_time="
+   match0 = re.search(pattern0.encode(),rtn)
+   if match0:
+      return True
+
    pattern1 = "{}: using static".format(nic_name)
    match1 = re.search(pattern1.encode(),rtn)
    if match1:

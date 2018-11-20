@@ -43,7 +43,7 @@ solo.chk_and_stopall(__file__)
 # #########################################
 # Begin Main CherryPy Server Class
 # #########################################
-class PyServ(object):
+class WebPanel(object):
 
    def __init__(self):
 
@@ -67,12 +67,6 @@ class PyServ(object):
       self.inc=0
 
       self.SESSION_KEY = 'webpanel_auth'
-
-
-
-   webpanel = WebPanel()
-
-
 
    # ------------------------
    @cherrypy.expose
@@ -142,7 +136,8 @@ class PyServ(object):
    @cherrypy.expose
    def netconf_rtn(self, **params):
 
-      self.authorize()
+      username = self.authorize()
+      print("&&&&&&&&&",username)
 
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
@@ -178,7 +173,7 @@ class PyServ(object):
 
          modconf.set_dhcp()
 
-      self.redirect('netconf/')
+      raise cherrypy.InternalRedirect('/webpanel/netconf/')
 
    # ------------------------
    def netconf_validate(self,params):
@@ -281,7 +276,7 @@ class PyServ(object):
 
       rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
       if rtn == True:
-          self.redirect('sslcert/')
+         raise cherrypy.InternalRedirect('/webpanel/sslcert/')
       else:
           raise cherrypy.HTTPError(500,self.certobj.error_msg)
 
@@ -302,8 +297,9 @@ class PyServ(object):
          if msg == True:
             cherrypy.session[self.SESSION_KEY] = cherrypy.request.login = username
 
-            # No return from redirect
-            self.redirect(from_page)
+            # Need to do a redirect to set session
+            url = "{}{}".format(cherrypy.request.headers['Origin'],from_page)
+            raise cherrypy.HTTPRedirect(url)
 
       trex = TemplateRex(fname='t_loginform.html')
       return( self.render_layout(trex,locals() ) )
@@ -331,7 +327,10 @@ class PyServ(object):
          cherrypy.request.login = username
       else:
          path_rel = cherrypy.request.path_info
-         self.redirect("login/?from_page={}".format(path_rel))
+         url = '/webpanel/login'
+         raise cherrypy.InternalRedirect(url,query_string="from_page={}".format(path_rel))
+
+      return(username)
 
    # --------------------------------------------
    # check credentials...
@@ -351,10 +350,10 @@ class PyServ(object):
       data_hsh['version'] = self.version
 
       # local ip means nginx is handling the request - set baseref
-      if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
-         data_hsh['base_ref'] = '/webpanel/'
-      else:
-         data_hsh['base_ref'] = '/'
+      #if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
+      #   data_hsh['base_ref'] = '/webpanel/'
+      #else:
+      #   data_hsh['base_ref'] = '/'
 
       trex.render_sec('content',data_hsh)
 
@@ -364,10 +363,27 @@ class PyServ(object):
    def redirect(self,url):
 
       # local ip means nginx is handling the request - set baseref
-      if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
-         url = '/webpanel/' + url
+      #if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
+      #   url = '/webpanel/' + url
 
-      raise cherrypy.HTTPRedirect(url,302)
+      raise cherrypy.HTTPRedirect(url)
+
+# ----------------------------
+class PyServ(object):
+
+   def __init__(self):
+
+      self.version = 1.0;
+
+      if os.path.isfile('./DEV_MODE'):
+         self.dev_mode = True
+
+   webpanel = WebPanel()
+
+   @cherrypy.expose
+   def index(self):
+      return("Go to /webpanel/")
+
 
 # #################################
 port = 9091
