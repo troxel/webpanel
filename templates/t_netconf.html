@@ -51,6 +51,11 @@ th { width: 35%;}
          <tr><th>DNS Server 1</th><td><input class="static_params" type="text" name="dns_server_1" value="$dns_server_1"></td></tr>
       </table>
 
+      <h4>NTP Servers</h4>
+      <table class="table table-bordered table-striped">
+         <tr><th><pre> $ntp_info </pre></td></tr>
+      </table>
+
    </div>
 </div>
 <div class="row">
@@ -97,10 +102,18 @@ $( document ).ready(function() {
    set_disable_enable();
 });
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 $( "#submit_form" ).submit(function( event )
 {
     $( "#submit_btn" ).prop("disabled",true);
     $.LoadingOverlay("show", {background  : "rgba(255, 255, 255, 0.35)", text:"Reconfiguring Interface"})
+
+    //await sleep(12000);
+    //window.location.replace("/webpanel/");
+
 });
 
 

@@ -1,0 +1,14 @@
+[Unit]
+Description=WebPanel
+After=network.target 
+
+[Service]
+ExecStart=/opt/webpanel/webpanel -q 
+KillMode=process
+Restart=always
+Type=simple
+WorkingDirectory=/opt/webpanel
+
+[Install]
+WantedBy=multi-user.target
+

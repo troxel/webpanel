@@ -101,13 +101,7 @@ class GenCerts(object):
       try:
          fspec = os.path.join(self.dir_root,fname)
 
-
-         print(".......",fspec)
-
          cert_struct = ssl._ssl._test_decode_cert(fspec)
-
-         print(">>>>",cert_struct)
-
 
       except:
          return cert_hsh

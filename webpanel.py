@@ -130,6 +130,8 @@ class WebPanel(object):
       for nic in nic_info:
          trex.render_sec('nic_blk',nic_info[nic])
 
+      data_hsh['ntp_info'] = sysinfo.get_ntp_info()
+
       return( self.render_layout(trex,data_hsh) )
 
    # ------------------------
@@ -137,7 +139,6 @@ class WebPanel(object):
    def netconf_rtn(self, **params):
 
       username = self.authorize()
-      print("&&&&&&&&&",username)
 
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
@@ -153,6 +154,7 @@ class WebPanel(object):
       if params['ip_method'] == 'static':
 
          # --------- Validate input   ---------
+
          err_hsh = self.netconf_validate(params)
 
          if err_hsh:
@@ -173,7 +175,11 @@ class WebPanel(object):
 
          modconf.set_dhcp()
 
-      raise cherrypy.InternalRedirect('/webpanel/netconf/')
+      rtn = os.system("reboot")
+
+      url = "{}/webpanel/".format(cherrypy.request.headers['Origin'])
+      time.sleep(5)  # in case the reboot doesn't happen
+      raise cherrypy.HTTPRedirect(url)
 
    # ------------------------
    def netconf_validate(self,params):
@@ -411,7 +417,7 @@ if __name__ == '__main__':
    if args.q:
       cherrypy.config.update({'environment': 'production'})
       cherrypy.config.update({'log.access_file':'/dev/null'})
-      cherrypy.config.update({'request.error_response': show_blank_page_on_error})
+      #cherrypy.config.update({'request.error_response': show_blank_page_on_error})
 
    cherrypy.quickstart(PyServ(), '/', '/opt/webpanel/conf/pyserv.conf')
    p.terminate()

@@ -99,6 +99,15 @@ def get_dns_info():
    return dns_hsh
 
 # ------------------------
+def get_ntp_info():
+
+   try:
+      rtn = subprocess.check_output(['/usr/bin/ntpq','-p'],stderr=subprocess.STDOUT)
+      return(rtn.decode())
+   except Exception as err:
+      return(err)
+
+# ------------------------
 def is_dhcp(nic_name='eth0'):
 
    # Surpisingly there is no unified way to determine if the current

@@ -110,4 +110,4 @@ venv.bak/
 .wget-hsts
 cert/webpanel.csr
 cert/webpanel.key
-
+.attic
