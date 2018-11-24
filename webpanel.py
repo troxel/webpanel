@@ -51,8 +51,6 @@ class WebPanel(object):
 
       if os.path.isfile('./DEV_MODE'):
          self.dev_mode = True
-      else:
-          self.dev_mode = False
 
       self.dir = {}
       self.dir['cert'] = './cert'
@@ -132,7 +130,9 @@ class WebPanel(object):
       for nic in nic_info:
          trex.render_sec('nic_blk',nic_info[nic])
 
-      data_hsh['ntp_info'] = sysinfo.get_ntp_info()
+      ntp_info = sysinfo.get_ntp_info()
+      if 'ntp_status' in ntp_info: data_hsh['ntp_status'] = ntp_info['ntp_status']
+      if 'ntp_server' in ntp_info: data_hsh['ntp_server'] = ntp_info['ntp_server']
 
       return( self.render_layout(trex,data_hsh) )
 
@@ -173,6 +173,8 @@ class WebPanel(object):
 
          modconf.set_hostname(params['hostname'], params['ip_address'])
 
+         modconf.set_ntp_server(params['ntp_server'])
+
       else:
 
          modconf.set_dhcp()
@@ -193,8 +195,14 @@ class WebPanel(object):
          try:
             ip_ckh = ipaddress.ip_address(params[key])
          except:
+            # Some can be blank
             if key == 'dns_server_1' and params[key] == '': continue
+            if key == 'ntp_server' and params[key] == '': continue
             err_hsh[key] = "Not valid IP address"   # assumes id == name in input html
+
+      for key in ('ntp_server',):
+         if not sysinfo.is_valid_hostname(params[key]):
+            err_hsh[key] = "Not valid IP/Host address"
 
       cidr = int(params['cidr'])
       if ( cidr < 1 or cidr > 31):

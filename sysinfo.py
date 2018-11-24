@@ -101,11 +101,25 @@ def get_dns_info():
 # ------------------------
 def get_ntp_info():
 
+   ntp_info = {}
    try:
       rtn = subprocess.check_output(['/usr/bin/ntpq','-p'],stderr=subprocess.STDOUT)
-      return(rtn.decode())
+      ntp_info['ntp_status'] = rtn.decode()
+
+      fspec_ntp_conf = '/run/ntp.conf.dhcp'
+      try:
+         with open(fspec_ntp_conf) as fid:
+            ntp_conf = fid.read()
+         pattern = "\nserver (.*)\n"
+         m = re.search(pattern,ntp_conf)
+         ntp_info['ntp_server'] = m.group(1)
+      except Exception as err:
+         ntp_info['ntp_server'] = ''
+
    except Exception as err:
-      return(err)
+      print("err",err)
+
+   return(ntp_info)
 
 # ------------------------
 def is_dhcp(nic_name='eth0'):
@@ -156,3 +170,13 @@ def is_dhcp(nic_name='eth0'):
 
    #if os.path.isfile('/run/dhclient-eth0.pid'):
    #   return True
+
+# ---------------------------
+def is_valid_hostname(hostname):
+   if len(hostname) > 255:
+     return False
+   if hostname[-1] == ".":
+      hostname = hostname[:-1] # strip exactly one dot from the right, if present
+
+   allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
+   return all(allowed.match(x) for x in hostname.split("."))
