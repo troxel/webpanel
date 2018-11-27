@@ -1,0 +1,13 @@
+--- fake-hwclock	2016-04-15 07:47:15.000000000 -0700
++++ fake-hwclock-mod	2018-10-22 14:42:06.977263635 -0700
+@@ -34,7 +34,10 @@
+         if [ -e $FILE ] ; then
+             NOW_SEC=$(date -u '+%s')
+             if $FORCE || [ $NOW_SEC -ge $HWCLOCK_EPOCH_SEC ] ; then
++		# wrap write in remounts rw and ro
++		mount -o rw,remount /
+                 date -u '+%Y-%m-%d %H:%M:%S' > $FILE
++		mount -o ro,remount /
+             else
+ 		echo "Time travel detected!"
+                 echo "fake-hwclock release date is in the future: $HWCLOCK_EPOCH"

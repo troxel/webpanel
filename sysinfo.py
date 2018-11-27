@@ -107,13 +107,14 @@ def get_ntp_info():
    except Exception as err:
       print("Err ntpq:",err)
 
-   fspec_ntp_conf = ['/run/ntp.conf.dhcp','/etc/ntp.conf']
+   # The first two are dhcpcd and last of course is static...      
+   fspec_ntp_conf = ['/run/ntp.conf.dhcp','/var/lib/ntp/ntp.conf.dhcp','/etc/ntp.conf']
    for fspec in fspec_ntp_conf:
       if os.path.isfile(fspec):
          try:
             with open(fspec) as fid:
                ntp_conf = fid.read()
-            pattern = "\nserver (.*)\n"
+            pattern = "\nserver (.*?)\s"
             m = re.search(pattern,ntp_conf)
             ntp_info['ntp_server'] = m.group(1)
             break

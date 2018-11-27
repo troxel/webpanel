@@ -3,7 +3,7 @@ Description=WebPanel
 After=network.target 
 
 [Service]
-ExecStart=/opt/webpanel/webpanel -q 
+ExecStart=/opt/webpanel/webpanel.py -q 
 KillMode=process
 Restart=always
 Type=simple
