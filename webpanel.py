@@ -180,11 +180,11 @@ class WebPanel(object):
          modconf.set_ntp_server("")
          modconf.set_dhcp()
 
-      rtn = os.system("reboot")
+      rtn = os.system("(sleep 2; reboot)&")
 
       url = "{}/webpanel/".format(cherrypy.request.headers['Origin'])
-      time.sleep(5)  # in case the reboot doesn't happen
       raise cherrypy.HTTPRedirect(url)
+
 
    # ------------------------
    def netconf_validate(self,params):
