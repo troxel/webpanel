@@ -9,7 +9,6 @@ import platform
 import distro
 import subprocess
 
-
 def __init__():
    version = 1.0;
 
@@ -105,19 +104,21 @@ def get_ntp_info():
    try:
       rtn = subprocess.check_output(['/usr/bin/ntpq','-p'],stderr=subprocess.STDOUT)
       ntp_info['ntp_status'] = rtn.decode()
-
-      fspec_ntp_conf = '/run/ntp.conf.dhcp'
-      try:
-         with open(fspec_ntp_conf) as fid:
-            ntp_conf = fid.read()
-         pattern = "\nserver (.*)\n"
-         m = re.search(pattern,ntp_conf)
-         ntp_info['ntp_server'] = m.group(1)
-      except Exception as err:
-         ntp_info['ntp_server'] = ''
-
    except Exception as err:
-      print("err",err)
+      print("Err ntpq:",err)
+
+   fspec_ntp_conf = ['/run/ntp.conf.dhcp','/etc/ntp.conf']
+   for fspec in fspec_ntp_conf:
+      if os.path.isfile(fspec):
+         try:
+            with open(fspec) as fid:
+               ntp_conf = fid.read()
+            pattern = "\nserver (.*)\n"
+            m = re.search(pattern,ntp_conf)
+            ntp_info['ntp_server'] = m.group(1)
+            break
+         except Exception as err:
+            ntp_info['ntp_server'] = ''
 
    return(ntp_info)
 

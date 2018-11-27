@@ -175,8 +175,9 @@ class WebPanel(object):
 
          modconf.set_ntp_server(params['ntp_server'])
 
-      else:
+      else: # dhcp
 
+         modconf.set_ntp_server("")
          modconf.set_dhcp()
 
       rtn = os.system("reboot")

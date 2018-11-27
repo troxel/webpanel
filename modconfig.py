@@ -49,15 +49,16 @@ class DHCP:
       self.write_sysfile('/etc/hosts',host_content)
 
    # ------------------------
-   def set_ntp_server(self, ntp_server):
+   def set_ntp_server(self, ntp_server=""):
 
       trex_ntp = TemplateRex(fname='t-ntp.conf.dhcp',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
-      trex_ntp.render_sec('server_blk',{'ntp_server':ntp_server})
+
+      if ntp_server:
+         trex_ntp.render_sec('server_blk',{'ntp_server':ntp_server})
+
       ntp_content = trex_ntp.render()
-      self.write_sysfile('/run/ntp.conf.dhcp',ntp_content)
+      self.write_sysfile('/etc/ntp.conf',ntp_content)
       os.system( 'systemctl restart ntp' )
-
-
 
    # ------------------------
    def reboot(self,delay='now'):
