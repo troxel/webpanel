@@ -51,6 +51,8 @@ class WebPanel(object):
 
       if os.path.isfile('./DEV_MODE'):
          self.dev_mode = True
+      else:
+         self.dev_mode = False
 
       self.dir = {}
       self.dir['cert'] = './cert'
@@ -175,9 +177,8 @@ class WebPanel(object):
 
          modconf.set_ntp_server(params['ntp_server'])
 
-      else: # dhcp
+      else:
 
-         modconf.set_ntp_server("")
          modconf.set_dhcp()
 
       rtn = os.system("(sleep 2; reboot)&")
