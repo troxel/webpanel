@@ -32,6 +32,35 @@ will create and install a new server with the parameters entered for the
 common name.  With in place and the CA installed in the trusted store you
 should have warning-free ssl access.  The new cert is a v3 x509 cert.
 
+# Authentication
+
+User Names and Passwords are stored in an Apache style htpasswd file.
+Presently there is not web forms to CRUD user/passwords. A TBD. The
+htpasswd file can be managed via the htpasswd file on the command line.
+Default credentials is user/pass = root/root
+
+Authentication uses a session cookie and obviously only makes sense in
+a ssl environment.
+
+Any callback that you want to add and want to protect it with a login
+just add at beginning of the callback:
+
+self.auth.authorize()
+
+
+# Misc config file
+
+## NGINX
+
+An example nginx config file is given in the setup directory. nginx
+provides for ssl (as cherrypy ssl implimentation is broken) and allows
+you to integrate other apps.
+
+## unit-files
+
+Example unit-files are in the setup directory
+
+
 # Dependencies
 
 Python3
@@ -50,4 +79,6 @@ pip3 install platform
 Linux modules
 
 apt-get install dhcpcd5
+apt-get install apache2-utils  # <--- htpasswd utility
+
 apt-get remove conmann

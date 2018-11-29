@@ -23,3 +23,10 @@ Selecting static network overwrite the static ntp.conf, keep the original around
 if needed. 
 
 >cp -a /etc/ntp.conf /etc/ntp.conf.orig
+
+
+3.  
+
+
+
+

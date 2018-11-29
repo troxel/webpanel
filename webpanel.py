@@ -37,6 +37,8 @@ import gencerts
 sys.path.insert(0,'./packages')
 from templaterex import TemplateRex
 
+from webauth import AuthSession
+
 import solo
 solo.chk_and_stopall(__file__)
 
@@ -68,7 +70,7 @@ class WebPanel(object):
       self.cnt = 1
       self.inc=0
 
-      self.SESSION_KEY = 'webpanel_auth'
+      self.auth = AuthSession(url_login="/webpanel/auth/login")
 
    # ------------------------
    @cherrypy.expose
@@ -96,7 +98,7 @@ class WebPanel(object):
 
       data_hsh = {}
 
-      data_hsh['username'] = self.authorize()
+      data_hsh['username'] = self.auth.authorize()
 
       #if err_struct:
       #   data_hsh['err_msg'] = err_struct['err_msg'];
@@ -142,7 +144,7 @@ class WebPanel(object):
    @cherrypy.expose
    def netconf_rtn(self, **params):
 
-      username = self.authorize()
+      username = self.auth.authorize()
 
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
@@ -247,7 +249,7 @@ class WebPanel(object):
    @cherrypy.expose
    def sslcert_newcert(self,**params):
 
-      self.authorize()
+      self.auth.authorize()
 
       trex = TemplateRex(fname='t_sslcert-newcert.html',dev_mode=True)
 
@@ -290,7 +292,7 @@ class WebPanel(object):
       #pprint.pprint(params)
       # probably should add some validation
 
-      self.authorize()
+      self.auth.authorize()
 
       rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
       if rtn == True:
@@ -298,68 +300,6 @@ class WebPanel(object):
       else:
           raise cherrypy.HTTPError(500,self.certobj.error_msg)
 
-   #--------------------------------------
-   # Auth CallBacks
-   #--------------------------------------
-
-   #--------------------------------------
-   @cherrypy.expose
-   def login(self, username="", password="", from_page="/"):
-
-      username = escape(username)
-      password = escape(password)
-      from_page = escape(from_page)
-
-      if username and password:
-         msg = self.check_credentials(username, password)
-         if msg == True:
-            cherrypy.session[self.SESSION_KEY] = cherrypy.request.login = username
-
-            # Need to do a redirect to set session
-            url = "{}{}".format(cherrypy.request.headers['Origin'],from_page)
-            raise cherrypy.HTTPRedirect(url)
-
-      trex = TemplateRex(fname='t_loginform.html')
-      return( self.render_layout(trex,locals() ) )
-
-   #--------------------------------------
-   @cherrypy.expose
-   def logout(self, from_page="/"):
-       sess = cherrypy.session
-       username = sess.get(self.SESSION_KEY, None)
-       sess[self.SESSION_KEY] = None
-       if username:
-           cherrypy.request.login = None
-           self.on_logout(username)
-       raise cherrypy.HTTPRedirect(from_page or "/")
-
-   # --------------------------------------------
-   # utility functions
-   # --------------------------------------------
-
-   # Include this at top of function to protect...
-   def authorize(self):
-
-      username = cherrypy.session.get(self.SESSION_KEY)
-      if username:
-         cherrypy.request.login = username
-      else:
-         path_rel = cherrypy.request.path_info
-         url = '/webpanel/login'
-         raise cherrypy.InternalRedirect(url,query_string="from_page={}".format(path_rel))
-
-      return(username)
-
-   # --------------------------------------------
-   # check credentials...
-   def check_credentials(self, username, password):
-       """Verifies credentials for username and password.
-       Returns None on success or a string describing the error on failure"""
-
-       if username in ('admin', 'root') and password == 'root':
-           return True
-       else:
-           return u"Incorrect username or password."
 
    # --------------------------------------------
    # Common featured called at the end of each callback abstracted out
@@ -411,6 +351,8 @@ if __name__ == '__main__':
    if not os.path.exists(dir_session):
           os.mkdir(dir_session)
 
+   cherrypy.config.update({'tools.sessions.storage_type':"file"})
+   cherrypy.config.update({'tools.sessions.storage_path':dir_session})
    cherrypy.config.update({'tools.sessions.on': True})
    cherrypy.config.update({'tools.sessions.timeout': 99999})
 
