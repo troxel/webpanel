@@ -5,6 +5,7 @@ import cherrypy
 from html import escape
 from templaterex import TemplateRex
 import os
+import pprint
 
 from passlib.apache import HtpasswdFile
 
@@ -31,8 +32,9 @@ class AuthSession(object):
             cherrypy.session[self.SESSION_KEY] = cherrypy.request.login = username
 
             # Need to do a redirect to set session
-            url = "{}{}".format(cherrypy.request.headers['Origin'],from_page)
-            raise cherrypy.HTTPRedirect(url)
+            # Had to add the host as just using /url/path would somehow add a "/" so we got "//"
+            url_redirect = "https://{}{}".format(cherrypy.request.headers.get('Host'),from_page)
+            raise cherrypy.HTTPRedirect(url_redirect)
 
       url_login = self.url_login
       trex = TemplateRex(fname='t_loginform.html')
@@ -46,6 +48,10 @@ class AuthSession(object):
        sess[self.SESSION_KEY] = None
        if username:
            cherrypy.request.login = None
+
+       if len(from_page) > 1:
+          from_page = "https://{}{}".format(cherrypy.request.headers.get('Host'),from_page)
+
        raise cherrypy.HTTPRedirect(from_page or "/")
 
    # --------------------------------------------

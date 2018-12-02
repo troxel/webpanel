@@ -306,12 +306,10 @@ class WebPanel(object):
    def render_layout(self,trex,data_hsh={}):
 
       data_hsh['version'] = self.version
+      data_hsh['user']    = cherrypy.request.login
 
-      # local ip means nginx is handling the request - set baseref
-      #if cherrypy.request.headers['Remote-Addr'] == '127.0.0.1':
-      #   data_hsh['base_ref'] = '/webpanel/'
-      #else:
-      #   data_hsh['base_ref'] = '/'
+      if cherrypy.request.login:
+         trex.render_sec('logged_in',{'user':cherrypy.request.login})
 
       trex.render_sec('content',data_hsh)
 
@@ -340,7 +338,7 @@ class PyServ(object):
 
    @cherrypy.expose
    def index(self):
-      return("Go to /webpanel/")
+      raise cherrypy.HTTPRedirect("/webpanel/")
 
 
 # #################################
@@ -356,9 +354,7 @@ if __name__ == '__main__':
    cherrypy.config.update({'tools.sessions.on': True})
    cherrypy.config.update({'tools.sessions.timeout': 99999})
 
-
-   #import inspect
-   #print(inspect.getfile(TemplateRex))
+   cherrypy.config.update({'tools.response_headers.on': True})
 
    if not args.q:
       print("\nStarting {} Server\n".format(__file__))
