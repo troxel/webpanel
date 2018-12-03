@@ -6,7 +6,7 @@ from html import escape
 from templaterex import TemplateRex
 import os
 import pprint
-
+import urllib.parse
 from passlib.apache import HtpasswdFile
 
 class AuthSession(object):
@@ -34,7 +34,7 @@ class AuthSession(object):
             # Need to do a redirect to set session
             # Had to add the host as just using /url/path would somehow add a "/" so we got "//"
             url_redirect = "https://{}{}".format(cherrypy.request.headers.get('Host'),from_page)
-            raise cherrypy.HTTPRedirect(url_redirect)
+            raise cherrypy.HTTPRedirect(url_redirect or '/')
 
       url_login = self.url_login
       trex = TemplateRex(fname='t_loginform.html')
@@ -53,6 +53,44 @@ class AuthSession(object):
           from_page = "https://{}{}".format(cherrypy.request.headers.get('Host'),from_page)
 
        raise cherrypy.HTTPRedirect(from_page or "/")
+
+   #--------------------------------------
+   @cherrypy.expose
+   def cred_crud(self, from_page='/'):
+
+      trex = TemplateRex(fname='t_loginform_crud.html')
+      return( trex.render(locals()) )
+
+   #--------------------------------------
+   @cherrypy.expose
+   def cred_crud_rtn(self, **parms):
+
+      trex = TemplateRex(fname='t_loginform_crud.html')
+
+      # ---- Validate Input ----------------
+      parms['msg'] = self.check_credentials(parms['username'],parms['password'])
+      if parms['msg'] != True:
+         return(trex.render(parms))
+
+      if not ( parms['username_new'] or parms['username_verify'] or parms['password_new'] or parms['password_verify']) :
+         parms['msg'] = "Blank Username or Password"
+         return(trex.render(parms))
+
+      if (parms['username_new'] != parms['username_verify']) or (parms['password_new'] != parms['password_verify']):
+         parms['msg'] = "New Username or Password do not mach Verify Username or Password"
+         return(trex.render(parms))
+
+      # Looks good go create new file. Note only allowng one user at this point in time.
+      # Multiple user only makes sense when there are roles
+
+      ht = HtpasswdFile(self.htpasswd, new=True)
+      ht.set_password(parms['username_new'], parms['password_new'])
+      rtn = ht.save()
+
+      if not 'from_page' in parms: parms['from_page'] = '/'
+      get_parms = {'from_page':parms['from_page'],'username':parms['username_new'],'password':parms['password_new']}
+      query_str = urllib.parse.urlencode(get_parms)
+      raise cherrypy.InternalRedirect(self.url_login,query_str)
 
    # --------------------------------------------
    # utility functions

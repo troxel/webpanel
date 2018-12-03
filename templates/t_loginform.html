@@ -10,7 +10,17 @@
             <tr><td>Username:</td><td> <input type="text" name="username" value="$username" /></td></tr>
             <tr><td>Password:</td><td> <input type="password" name="password" /> </td></tr>
           </table>
-          <br /><br />
-         <input type="submit" value="Log in" />
+         <div style="text-align:center;margin-top:17px;">
+         <input  type="submit" value="LOG IN" />
+         </div>
+      </form>
+      <hr>
+      <div style="text-align:center;margin-top:17px;">
+      <form method="post" action="/webpanel/auth/cred_crud">
+         <input type="hidden" name="from_page" value="$from_page" />
+         <input type="submit" style="font-size:.7em;" value="Change Credentials" />
+      </form>
+      </div>
+
 </div>
 </div>

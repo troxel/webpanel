@@ -1,0 +1,36 @@
+<style>
+   caption { color:white; text-align: center; margin-top:7px; }
+
+
+</style>
+<div style="margin:0 auto; width:300px;border:1px solid black;background-color:#77ddbb">
+<div style="margin:7px;">
+   <h3>Log In</h3>
+   <h4 style="margin-top:10px;margin-bottom:20px;color:red">$msg</h4>
+   <hr>
+   <form method="post" action="/webpanel/auth/cred_crud_rtn">
+   <input type="hidden" name="from_page" value="$from_page" />
+      <table class="table">
+         <caption>Current Credentials</caption>
+         <tr><td>Username:</td><td> <input type="text" name="username" value="$username" /></td></tr>
+         <tr><td>Password:</td><td> <input type="password" name="password" /> </td></tr>
+       </table>
+       <hr>
+      <table class="table">
+         <caption>New Credentials</caption>
+         <tr><td>Username:</td><td> <input type="text" name="username_new" value="$username" /></td></tr>
+         <tr><td>Password:</td><td> <input type="password" name="password_new" /> </td></tr>
+       </table>
+       <hr>
+      <table class="table">
+         <caption>Verify New Credentials</caption>
+         <tr><td>Username:</td><td> <input type="text" name="username_verify" value="$username_verify" /></td></tr>
+         <tr><td>Password:</td><td> <input type="password" name="password_verify" /> </td></tr>
+       </table>
+      <div style="text-align:center;margin-top:17px;">
+      <input  type="submit" value="Change Credentials" />
+      </div>
+   </form>
+   $err
+</div>
+</div>
