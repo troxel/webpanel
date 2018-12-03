@@ -33,7 +33,9 @@ class AuthSession(object):
 
             # Need to do a redirect to set session
             # Had to add the host as just using /url/path would somehow add a "/" so we got "//"
-            url_redirect = "https://{}{}".format(cherrypy.request.headers.get('Host'),from_page)
+            host = cherrypy.request.headers.get('Host')
+            scheme = cherrypy.request.scheme    # uses http for development 
+            url_redirect = "{}://{}{}".format(scheme,host,from_page)
             raise cherrypy.HTTPRedirect(url_redirect or '/')
 
       url_login = self.url_login
@@ -50,7 +52,9 @@ class AuthSession(object):
            cherrypy.request.login = None
 
        if len(from_page) > 1:
-          from_page = "https://{}{}".format(cherrypy.request.headers.get('Host'),from_page)
+         host = cherrypy.request.headers.get('Host')
+         scheme = cherrypy.request.scheme    # uses http for development 
+         from_page = "{}://{}{}".format(scheme,host,from_page)
 
        raise cherrypy.HTTPRedirect(from_page or "/")
 

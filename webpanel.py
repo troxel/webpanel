@@ -338,6 +338,7 @@ class PyServ(object):
 
    @cherrypy.expose
    def index(self):
+      print(">>>>>")
       raise cherrypy.HTTPRedirect("/webpanel/")
 
 
