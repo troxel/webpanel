@@ -87,9 +87,19 @@ class AuthSession(object):
       # Looks good go create new file. Note only allowng one user at this point in time.
       # Multiple user only makes sense when there are roles
 
+      # Write to a filesystem that is configured as ro
+      rtn = os.system('mount -o rw,remount /')
+      if rtn != 0:
+         raise SystemError("Cannot remount rw root partition")
+
       ht = HtpasswdFile(self.htpasswd, new=True)
       ht.set_password(parms['username_new'], parms['password_new'])
       rtn = ht.save()
+
+      # Leave in a ro state...
+      rtn = os.system('mount -o ro,remount /')
+      if rtn != 0:
+         raise SystemError("Cannot remount ro root partition ",rtn)
 
       if not 'from_page' in parms: parms['from_page'] = '/'
       get_parms = {'from_page':parms['from_page'],'username':parms['username_new'],'password':parms['password_new']}
