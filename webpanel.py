@@ -146,6 +146,12 @@ class WebPanel(object):
 
       username = self.auth.authorize()
 
+      # A complete specification of the url for redirects is required
+      # as cherrypy tacks on an extra /
+      host = cherrypy.request.headers.get('Host')
+      scheme = cherrypy.request.scheme
+      url_redirect = "{}://{}{}".format(scheme,host,'/webpanel/')
+
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
 
@@ -156,6 +162,9 @@ class WebPanel(object):
          modconf = modconfig.DHCP(ro_flag=False)
       else:
          modconf = modconfig.DHCP(ro_flag=True)
+
+      if not 'ip_method' in params:
+         raise cherrypy.HTTPRedirect(url_redirect)
 
       if params['ip_method'] == 'static':
 
@@ -185,9 +194,7 @@ class WebPanel(object):
 
       rtn = os.system("(sleep 2; reboot)&")
 
-      url = "{}/webpanel/".format(cherrypy.request.headers['Origin'])
-      raise cherrypy.HTTPRedirect(url)
-
+      raise cherrypy.HTTPRedirect(url_redirect)
 
    # ------------------------
    def netconf_validate(self,params):

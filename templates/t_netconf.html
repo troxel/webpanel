@@ -104,7 +104,7 @@ $( document ).ready(function() {
 });
 
 function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise(resolve = setTimeout(resolve, ms));
 }
 
 $( "#submit_form" ).submit(function( event )
@@ -113,8 +113,8 @@ $( "#submit_form" ).submit(function( event )
     $.LoadingOverlay("show", {background  : "rgba(255, 255, 255, 0.35)", text:"Reconfiguring Interface"})
 
     // doesn't work
-    //await sleep(12000);
-    //window.location.replace("/webpanel/");
+    await sleep(5000);
+    window.location.replace("/webpanel/");
 
 });
 

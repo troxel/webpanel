@@ -34,9 +34,9 @@ class AuthSession(object):
             # Need to do a redirect to set session
             # Had to add the host as just using /url/path would somehow add a "/" so we got "//"
             host = cherrypy.request.headers.get('Host')
-            scheme = cherrypy.request.scheme    # uses http for development 
+            scheme = cherrypy.request.scheme    # uses http for development
             url_redirect = "{}://{}{}".format(scheme,host,from_page)
-            raise cherrypy.HTTPRedirect(url_redirect or '/')
+            raise cherrypy.HTTPRedirect(url_redirect)
 
       url_login = self.url_login
       trex = TemplateRex(fname='t_loginform.html')
@@ -53,7 +53,7 @@ class AuthSession(object):
 
        if len(from_page) > 1:
          host = cherrypy.request.headers.get('Host')
-         scheme = cherrypy.request.scheme    # uses http for development 
+         scheme = cherrypy.request.scheme    # uses http for development
          from_page = "{}://{}{}".format(scheme,host,from_page)
 
        raise cherrypy.HTTPRedirect(from_page or "/")
