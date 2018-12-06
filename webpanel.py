@@ -37,7 +37,8 @@ import gencerts
 sys.path.insert(0,'./packages')
 from templaterex import TemplateRex
 
-from webauth import AuthSession
+from webauth  import AuthSession
+from firmware import FirmwareUpdate
 
 import solo
 solo.chk_and_stopall(__file__)
@@ -71,6 +72,7 @@ class WebPanel(object):
       self.inc=0
 
       self.auth = AuthSession(url_login="/webpanel/auth/login")
+      self.firmware = FirmwareUpdate()
 
    # ------------------------
    @cherrypy.expose
