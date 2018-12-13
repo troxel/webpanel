@@ -25,9 +25,9 @@ There is a command line tool
 
 create_CA_cert.py
 
-That will recreate a new CA cert if desired but this is not necessary.
+That will recreate a new CA cert. After install run create_CA_cert.py
 
-However a new server cert should be created from the sslcert page which
+A new server cert should be created from the sslcert page which
 will create and install a new server with the parameters entered for the
 common name.  With in place and the CA installed in the trusted store you
 should have warning-free ssl access.  The new cert is a v3 x509 cert.
@@ -48,7 +48,18 @@ just add at beginning of the callback:
 self.auth.authorize()
 
 
-# Misc config file
+# Misc config file notes:
+
+## filesystem read only 'ro' and read write 'rw' mode.
+
+All file writes and files system actions are handled by commonutils.py.
+
+If the status of the root file system at start up is 'ro' then all changes
+to the file system will change the status to 'rw' mode and then back to 'ro'
+mode when done.
+
+If the status of the root files system at start is 'rw' then all changes
+will leave the file system in 'rw'. This is useful for development.
 
 ## NGINX
 
@@ -58,8 +69,22 @@ you to integrate other apps.
 
 ## unit-files
 
-Example unit-files are in the setup directory
+Example unit-files are in the setup directory. Note that unit files
+are configured to restart if app quits. This means that to run on the
+command line you have stop the service and then run from from the command
+line. That is:
 
+>systemctl stop webpanel
+>cd /opt/webpanel
+>./webpanel.py
+
+Also the unit file runs the webpanel in quiet mode.
+
+
+## DEV_MODE
+
+If a file DEV_MODE exists in webpanel directory then template renders
+will include the source of the templates in the output.
 
 # Dependencies
 
@@ -73,7 +98,6 @@ pip3 install netaddr
 pip3 install cryptography
 pip3 install TemplateRex
 pip3 install platform
-
 
 
 Linux modules
