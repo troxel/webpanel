@@ -375,6 +375,7 @@ if __name__ == '__main__':
    if args.q:
       cherrypy.config.update({'environment': 'production'})
       cherrypy.config.update({'log.access_file':'/dev/null'})
+      cherrypy.config.update({'engine.autoreload.on' : False})
       #cherrypy.config.update({'request.error_response': show_blank_page_on_error})
 
    cherrypy.quickstart(PyServ(), '/', '/opt/webpanel/conf/pyserv.conf')
