@@ -47,10 +47,9 @@ just add at beginning of the callback:
 
 self.auth.authorize()
 
-
 # Misc config file notes:
 
-## filesystem read only 'ro' and read write 'rw' mode.
+## Filesystem read only 'ro' and read write 'rw' mode.
 
 All file writes and files system actions are handled by commonutils.py.
 
@@ -67,6 +66,12 @@ An example nginx config file is given in the setup directory. nginx
 provides for ssl (as cherrypy ssl implimentation is broken) and allows
 you to integrate other apps.
 
+The NGINX unit-file (/lib/systemctl/system/nginx.service) has a modification  
+
+ExecStartPre=/bin/mkdir -p /var/log/nginx
+
+Without this addition nginx will not start. See nginx unit-file in ./setup/unit-files
+
 ## unit-files
 
 Example unit-files are in the setup directory. Note that unit files
@@ -78,13 +83,17 @@ line. That is:
 >cd /opt/webpanel
 >./webpanel.py
 
-Also the unit file runs the webpanel in quiet mode.
-
+Also the unit file runs the webpanel in quiet mode -q.
 
 ## DEV_MODE
 
 If a file DEV_MODE exists in webpanel directory then template renders
 will include the source of the templates in the output.
+
+## Command line Options
+
+-q  Runs in production mode. Most notably it turns off autoreload which is a 
+resource hog and turns off stdout to console. 
 
 # Dependencies
 
