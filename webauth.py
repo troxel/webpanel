@@ -9,14 +9,18 @@ import pprint
 import urllib.parse
 from passlib.apache import HtpasswdFile
 
-class AuthSession(object):
+from commonutils import Utils
+
+class AuthSession(Utils):
 
    def __init__(self,session_key='auth_session',url_login='/auth/login/',htpasswd='/opt/webpanel/htpasswd'):
 
       self.version = 1.0;
       self.url_login = url_login;
       self.SESSION_KEY = session_key
-      self.htpasswd = htpasswd
+      self.htpasswd = htpasswd        # fspec of htpasswd file
+
+      Utils.__init__(self)
 
    #--------------------------------------
    @cherrypy.expose
@@ -34,8 +38,10 @@ class AuthSession(object):
             # Need to do a redirect to set session
             # Had to add the host as just using /url/path would somehow add a "/" so we got "//"
             host = cherrypy.request.headers.get('Host')
-            scheme = cherrypy.request.scheme    # uses http for development
+            #scheme = cherrypy.request.scheme    # uses http for development
+            scheme = 'https'
             url_redirect = "{}://{}{}".format(scheme,host,from_page)
+
             raise cherrypy.HTTPRedirect(url_redirect)
 
       url_login = self.url_login
@@ -54,6 +60,7 @@ class AuthSession(object):
        if len(from_page) > 1:
          host = cherrypy.request.headers.get('Host')
          scheme = cherrypy.request.scheme    # uses http for development
+         scheme = 'https'
          from_page = "{}://{}{}".format(scheme,host,from_page)
 
        raise cherrypy.HTTPRedirect(from_page or "/")
@@ -87,19 +94,13 @@ class AuthSession(object):
       # Looks good go create new file. Note only allowng one user at this point in time.
       # Multiple user only makes sense when there are roles
 
-      # Write to a filesystem that is configured as ro
-      rtn = os.system('mount -o rw,remount /')
-      if rtn != 0:
-         raise SystemError("Cannot remount rw root partition")
+      self.rw()
 
       ht = HtpasswdFile(self.htpasswd, new=True)
       ht.set_password(parms['username_new'], parms['password_new'])
       rtn = ht.save()
 
-      # Leave in a ro state...
-      rtn = os.system('mount -o ro,remount /')
-      if rtn != 0:
-         raise SystemError("Cannot remount ro root partition ",rtn)
+      self.ro()
 
       if not 'from_page' in parms: parms['from_page'] = '/'
       get_parms = {'from_page':parms['from_page'],'username':parms['username_new'],'password':parms['password_new']}

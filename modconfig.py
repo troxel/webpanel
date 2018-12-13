@@ -3,21 +3,21 @@ import os
 import re
 
 import sys
-sys.path.insert(0,'./packages')
+
 from templaterex import TemplateRex
+from commonutils import Utils
 
 # Makes configuration changes to OS.
 
-class DHCP:
+class DHCP(Utils):
 
    # Assumes dhcpcd5 network management...
    # Reference https://www.daemon-systems.org/man/dhcpcd.conf.5.html
 
    # ------------------------
-   def __init__(self, ro_flag=True):
+   def __init__(self):
       self.version = 1.0;
-
-      self.ro_flag = ro_flag
+      Utils.__init__(self)
 
    # ------------------------
    def set_static(self,params):
@@ -64,28 +64,3 @@ class DHCP:
    def reboot(self,delay='now'):
 
       os.system( '/sbin/shutdown -r {}'.format(delay) )
-
-   # -----------------------
-   # Utitility functions
-   # -----------------------
-
-   # -----------------------
-   # Write file to a ro filesystem
-   def write_sysfile(self,fspec,contents):
-
-      # Write to a filesystem that is configured as ro
-
-      rtn = os.system('mount -o rw,remount /')
-      if rtn != 0:
-         raise SystemError("Cannot remount rw root partition")
-
-      with open(fspec, 'w+') as fid:
-         fid.write(contents)
-
-      os.sync()
-
-      # Leave in a ro state...
-      if self.ro_flag:
-         rtn = os.system('mount -o ro,remount /')
-         if rtn != 0:
-            raise SystemError("Cannot remount ro root partition ",rtn)
