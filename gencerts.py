@@ -7,13 +7,16 @@ import ssl
 import subprocess
 import sys
 
-class GenCerts(object):
+from commonutils import Utils
+
+class GenCerts(Utils):
 
    #-----------------------------------------------
    def __init__(self,dir_root='./cert'):
 
       self.dir_root = dir_root
       self.error_msg = ""
+      Utils.__init__(self)
 
    #-----------------------------------------------
    def gen_server_cert(self,subj_hsh,ip_lst=[],dns_lst=[]):
@@ -36,30 +39,29 @@ class GenCerts(object):
       ini_out = trex.render(subj_hsh)
 
       fspec_ini = os.path.join(self.dir_root,'openssl_cert.ini')
-      fid = open(fspec_ini,'w+')
-      fid.write(ini_out)
-      fid.close()
+      self.write_sysfile(fspec_ini,ini_out)
 
       # House cleaning... gets a db error if doen't do this
       # we don't care about crl
       fspec_newcert = os.path.join(self.dir_root,'newcerts')
-      os.system('rm {}'.format(fspec_newcert))
+      self.rm_dir(fspec_newcert)
 
+      # An index file needs to be present
       fspec_index = os.path.join(self.dir_root,'index.txt')
-      fid = open(fspec_index,'w+')
-      fid.close()
+      self.write_sysfile(fspec_index,'')
 
       fspec_serial = os.path.join(self.dir_root,'serial')
-      fid = open(fspec_serial,'w+')
-      fid.write(str(int(time.time())))
-      fid.close()
+      self.write_sysfile(fspec_serial, str( int(time.time() )) )
 
       # Generate private key and csr
       fspec_key = os.path.join(self.dir_root,'webpanel.key')
       fspec_csr = os.path.join(self.dir_root,'webpanel.csr')
       ##cmd = "openssl req -verbose -config openssl_cert.ini -newkey rsa:2048 -nodes -keyout webpanel.key  -out webpanel.csr -batch"
-      cmd = "openssl req -verbose -config {} -newkey rsa:2048 -nodes -keyout {} -out {} -batch".format(fspec_ini,fspec_key,fspec_csr)
 
+      # Wrap the following system call in file system rw/ro
+      self.rw()
+
+      cmd = "openssl req -verbose -config {} -newkey rsa:2048 -nodes -keyout {} -out {} -batch".format(fspec_ini,fspec_key,fspec_csr)
       rtn = os.system(cmd)
       if rtn:
          raise SystemError('openssl cmd error')
@@ -76,7 +78,10 @@ class GenCerts(object):
         rtn = subprocess.check_output(cmd_lst, stderr=subprocess.STDOUT)
       except subprocess.CalledProcessError as e:
           self.error_msg = e.output.decode(sys.getfilesystemencoding())
-          return False
+          self.ro()
+          return(False)
+
+      self.ro()
 
       return(True)
 

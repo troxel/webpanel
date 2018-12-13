@@ -160,10 +160,7 @@ class WebPanel(object):
       # This takes the extra step to handle multiple interfaces. Adds
       # complexity but there cases when there are multiple interfaces.
 
-      if self.dev_mode:
-         modconf = modconfig.DHCP(ro_flag=False)
-      else:
-         modconf = modconfig.DHCP(ro_flag=True)
+      modconf = modconfig.DHCP()
 
       if not 'ip_method' in params:
          raise cherrypy.HTTPRedirect(url_redirect)
@@ -260,6 +257,7 @@ class WebPanel(object):
 
       self.auth.authorize()
 
+      # dev_mode give location of templates being used in html output
       trex = TemplateRex(fname='t_sslcert-newcert.html',dev_mode=True)
 
       cert_hsh = self.certobj.parse_cert('webpanel.crt')
