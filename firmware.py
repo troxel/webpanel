@@ -10,14 +10,17 @@ import urllib.parse
 
 from webauth  import AuthSession
 
-class FirmwareUpdate(object):
+from commonutils import Utils
+
+class FirmwareUpdate(Utils):
 
    def __init__(self):
 
       self.version = 1.0;
       self.upload_dir = '/tmp';
       self.auth = AuthSession(url_login="/webpanel/auth/login")
-   
+      Utils.__init__(self)
+
    #--------------------------------------
    @cherrypy.expose
    def upload(self):
@@ -34,10 +37,11 @@ class FirmwareUpdate(object):
       self.auth.authorize()
             
       # I hate spaces in filenames      
-      upload_files.filename(" ", "_")
+      upload_file.filename.replace(" ", "_")
            
       # Should check for illegal file characters
            
+      self.rw()     
       upload_fspec = os.path.join(self.upload_dir, upload_file.filename)
       with open(upload_fspec, 'wb') as out:
          while True:
@@ -49,6 +53,8 @@ class FirmwareUpdate(object):
             out.write(data)
             
       # Do something
+      
+      self.ro()
       
       # Probably reboot at this point. 
       
