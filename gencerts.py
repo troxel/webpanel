@@ -24,7 +24,7 @@ class GenCerts(Utils):
       # subj_hsh should contain: 'countryName','organizationName','commonName'
 
       fspec_template = os.path.join(self.dir_root,'openssl-template.ini')
-      trex = TemplateRex(fname=fspec_template,cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      trex = TemplateRex(fname=fspec_template,template_dirs=['.'],cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
 
       for inx,ip in enumerate(ip_lst):
          if not ip: continue

@@ -2,12 +2,14 @@ import pprint
 import os
 import os.path
 import subprocess
+import cherrypy
 
 class Utils:
 
+   # Common utils to mostly handle ro/rw issues and other common needs
+
    def __init__(self):
       version = 1.0;
-      self.is_ro = self.is_filesys_ro()
 
    # -----------------------
    # Write file to a ro filesystem
@@ -36,7 +38,8 @@ class Utils:
 
       # If the filesystem was originally in ro mode leave in ro mode
       # Otherwise leave alone - a development feature...
-      if self.is_ro:
+      is_ro = self.is_filesys_ro()
+      if is_ro:
          rtn = os.system('mount -o ro,remount /')
          if rtn != 0:
             raise SystemError("Cannot remount ro root partition")
@@ -66,3 +69,20 @@ class Utils:
          return(True)
       else:
          return(False)
+
+   # ------------------------
+   def url_gen(self,path,from_page=''):
+      # Cannot do relative url redirects when working with proxy
+      # as cherrpy isn't aware of the protocol   
+      
+      host = cherrypy.request.headers.get('Host')
+      proto = cherrypy.request.headers.get('X-Scheme') 
+      if proto is None: proto = 'http' 
+      
+      if from_page:
+         from_page = "?from_page={}".format(from_page)
+      
+      url = "{}://{}{}{}".format(proto,host,path,from_page)
+      return(url)
+      
+         

@@ -21,7 +21,7 @@ class AuthSession(Utils):
       self.htpasswd = htpasswd        # fspec of htpasswd file
 
       Utils.__init__(self)
-
+      
    #--------------------------------------
    @cherrypy.expose
    def login(self, username="", password="", from_page="/"):
@@ -36,12 +36,7 @@ class AuthSession(Utils):
             cherrypy.session[self.SESSION_KEY] = cherrypy.request.login = username
 
             # Need to do a redirect to set session
-            # Had to add the host as just using /url/path would somehow add a "/" so we got "//"
-            host = cherrypy.request.headers.get('Host')
-            #scheme = cherrypy.request.scheme    # uses http for development
-            scheme = 'https'
-            url_redirect = "{}://{}{}".format(scheme,host,from_page)
-
+            url_redirect = self.url_gen(from_page)
             raise cherrypy.HTTPRedirect(url_redirect)
 
       url_login = self.url_login
@@ -50,20 +45,15 @@ class AuthSession(Utils):
 
    #--------------------------------------
    @cherrypy.expose
-   def logout(self, from_page="/"):
-       sess = cherrypy.session
-       username = sess.get(self.SESSION_KEY, None)
-       sess[self.SESSION_KEY] = None
-       if username:
-           cherrypy.request.login = None
-
-       if len(from_page) > 1:
-         host = cherrypy.request.headers.get('Host')
-         scheme = cherrypy.request.scheme    # uses http for development
-         scheme = 'https'
-         from_page = "{}://{}{}".format(scheme,host,from_page)
-
-       raise cherrypy.HTTPRedirect(from_page or "/")
+   def logout(self, from_page="/webpanel"):
+      sess = cherrypy.session
+      username = sess.get(self.SESSION_KEY, None)
+      sess[self.SESSION_KEY] = None
+      if username:
+          cherrypy.request.login = None
+      
+      from_page = self.url_gen(from_page)
+      raise cherrypy.HTTPRedirect(from_page)
 
    #--------------------------------------
    @cherrypy.expose
@@ -118,9 +108,8 @@ class AuthSession(Utils):
       if username:
          cherrypy.request.login = username
       else:
-         path_rel = cherrypy.request.path_info
-         ##raise cherrypy.InternalRedirect(self.url_login,query_string="from_page={}".format(path_rel))
-         raise cherrypy.HTTPRedirect("{}?from_page={}".format(self.url_login,path_rel) )
+         url_redirect = self.url_gen(self.url_login,from_page=cherrypy.request.path_info)
+         raise cherrypy.HTTPRedirect(url_redirect)
 
       return(username)
 

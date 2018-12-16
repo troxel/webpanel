@@ -1,11 +1,11 @@
-from pprint import pprint
+import pprint
 import os
 import re
 
 import sys
 
-from templaterex import TemplateRex
 from commonutils import Utils
+from templaterex import TemplateRex
 
 # Makes configuration changes to OS.
 
@@ -13,16 +13,26 @@ class DHCP(Utils):
 
    # Assumes dhcpcd5 network management...
    # Reference https://www.daemon-systems.org/man/dhcpcd.conf.5.html
-
+  
    # ------------------------
    def __init__(self):
-      self.version = 1.0;
+      self.version = 1.0
+     
+      # Use a hash since there are a lot parameters including search path  
+      self.template_args = {}
+      self.template_args['template_dirs'] = ['./templates_sys','/etc']
+      self.template_args['cmnt_prefix']   = '##-'
+      self.template_args['cmnt_postfix']  = '-##'
+      self.template_args['dev_mode'] = True
+ 
       Utils.__init__(self)
 
    # ------------------------
    def set_static(self,params):
 
-      trex_dhcpcd = TemplateRex(fname='/etc/dhcpcd-template.conf',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      self.template_args['fname'] = '/etc/dhcpcd-template.conf'
+      trex_dhcpcd = TemplateRex(**self.template_args)
+
       if params['ip_method'] == 'static':
          trex_dhcpcd.render_sec('static_conf',params)
 
@@ -43,7 +53,8 @@ class DHCP(Utils):
       self.write_sysfile('/etc/hostname',hostname)
 
       # Write to host file
-      trex_hosts = TemplateRex(fname='/etc/hosts-template',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      self.template_args['fname'] = 'hosts-template'
+      trex_hosts = TemplateRex(**self.template_args)
       trex_hosts.render_sec('hostname',{'ip':ip,'hostname':hostname})
       host_content = trex_hosts.render()
       self.write_sysfile('/etc/hosts',host_content)
@@ -51,7 +62,8 @@ class DHCP(Utils):
    # ------------------------
    def set_ntp_server(self, ntp_server=""):
 
-      trex_ntp = TemplateRex(fname='t-ntp.conf.dhcp',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      self.template_args['fname'] = 't-ntp.conf.dhcp'
+      trex_ntp = TemplateRex(**self.template_args)
 
       if ntp_server:
          trex_ntp.render_sec('server_blk',{'ntp_server':ntp_server})

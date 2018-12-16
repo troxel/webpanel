@@ -57,8 +57,7 @@ class FirmwareUpdate(Utils):
       self.ro()
       
       # Probably reboot at this point. 
-      
-      raise cherrypy.HTTPRedirect("/")
+      raise cherrypy.HTTPRedirect(self.url_gen('/webpanel'))
 
    #--------------------------------------
    # Need to make this a util function... 

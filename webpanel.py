@@ -33,20 +33,23 @@ import sysinfo
 import modconfig
 import gencerts
 
-# Local sub-modules
-sys.path.insert(0,'./packages')
 from templaterex import TemplateRex
+
+# Custom search path 
+TemplateRex.template_dirs = ['./templates_cust','./templates']
 
 from webauth  import AuthSession
 from firmware import FirmwareUpdate
+from commonutils import Utils
 
+sys.path.insert(0,'./packages')
 import solo
 solo.chk_and_stopall(__file__)
 
 # #########################################
 # Begin Main CherryPy Server Class
 # #########################################
-class WebPanel(object):
+class WebPanel(Utils):
 
    def __init__(self):
 
@@ -67,17 +70,16 @@ class WebPanel(object):
       # cert stuff...
       self.certobj = gencerts.GenCerts(dir_root='./cert')
 
-      # Test stuff... erase later.
-      self.cnt = 1
-      self.inc=0
-
       self.auth = AuthSession(url_login="/webpanel/auth/login")
       self.firmware = FirmwareUpdate()
+
+      # merge common utils    
+      Utils.__init__(self)
 
    # ------------------------
    @cherrypy.expose
    def index(self):
-
+ 
       data_hsh = {}
       root_path = os.getcwd()
 
@@ -149,11 +151,8 @@ class WebPanel(object):
       username = self.auth.authorize()
 
       # A complete specification of the url for redirects is required
-      # as cherrypy tacks on an extra /
-      host = cherrypy.request.headers.get('Host')
-      scheme = cherrypy.request.scheme
-      url_redirect = "{}://{}{}".format(scheme,host,'/webpanel/')
-
+      url_redirect = self.url_gen('/webpanel')
+     
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
 
@@ -191,7 +190,7 @@ class WebPanel(object):
 
          modconf.set_dhcp()
 
-      rtn = os.system("(sleep 2; reboot)&")
+      ###rtn = os.system("(sleep 2; reboot)&")
 
       raise cherrypy.HTTPRedirect(url_redirect)
 
