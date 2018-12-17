@@ -30,7 +30,7 @@ class DHCP(Utils):
    # ------------------------
    def set_static(self,params):
 
-      self.template_args['fname'] = '/etc/dhcpcd-template.conf'
+      self.template_args['fname'] = 'dhcpcd-template.conf'
       trex_dhcpcd = TemplateRex(**self.template_args)
 
       if params['ip_method'] == 'static':
@@ -42,7 +42,8 @@ class DHCP(Utils):
    # ------------------------
    def set_dhcp(self):
 
-      trex_dhcpcd = TemplateRex(fname='/etc/dhcpcd-template.conf',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
+      self.template_args['fname'] = 'dhcpcd-template.conf'
+      trex_dhcpcd = TemplateRex(**self.template_args)
 
       dhcpcd_file_content = trex_dhcpcd.render()
       self.write_sysfile('/etc/dhcpcd.conf',dhcpcd_file_content)
