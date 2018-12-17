@@ -47,6 +47,24 @@ just add at beginning of the callback:
 
 self.auth.authorize()
 
+# Templates
+
+HTML templates can be found in ./templates and customer override templates 
+in ./template_cust. The search priority path is:
+
+./template_cust
+./tempates
+
+The template class looks in the search path and stops after finding the first named 
+template. The base layout template is in template_cust as an example  
+
+System templates can be found in ./templates_cust or in /etc. The search priority is:
+
+./etc
+./templates_sys  
+
+The rendered system templates have hints of the source of the template used. 
+
 # Misc config file notes:
 
 ## Filesystem read only 'ro' and read write 'rw' mode.
@@ -71,6 +89,8 @@ The NGINX unit-file (/lib/systemctl/system/nginx.service) has a modification
 ExecStartPre=/bin/mkdir -p /var/log/nginx
 
 Without this addition nginx will not start. See nginx unit-file in ./setup/unit-files
+
+A sample nginx configuration files can be found here ./setup/nginx/webpanel.conf
 
 ## unit-files
 

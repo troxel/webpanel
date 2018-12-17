@@ -60,6 +60,8 @@ class WebPanel(Utils):
       else:
          self.dev_mode = False
 
+      TemplateRex.dev_mode = self.dev_mode
+         
       self.dir = {}
       self.dir['cert'] = './cert'
 
@@ -190,7 +192,7 @@ class WebPanel(Utils):
 
          modconf.set_dhcp()
 
-      ###rtn = os.system("(sleep 2; reboot)&")
+      rtn = os.system("(sleep 2; reboot)&")
 
       raise cherrypy.HTTPRedirect(url_redirect)
 
