@@ -35,7 +35,7 @@ import gencerts
 
 from templaterex import TemplateRex
 
-# Custom search path 
+# Custom search path
 TemplateRex.template_dirs = ['./templates_cust','./templates']
 
 from webauth  import AuthSession
@@ -61,7 +61,7 @@ class WebPanel(Utils):
          self.dev_mode = False
 
       TemplateRex.dev_mode = self.dev_mode
-         
+
       self.dir = {}
       self.dir['cert'] = './cert'
 
@@ -75,13 +75,13 @@ class WebPanel(Utils):
       self.auth = AuthSession(url_login="/webpanel/auth/login")
       self.firmware = FirmwareUpdate()
 
-      # merge common utils    
+      # merge common utils
       Utils.__init__(self)
 
    # ------------------------
    @cherrypy.expose
    def index(self):
- 
+
       data_hsh = {}
       root_path = os.getcwd()
 
@@ -154,7 +154,7 @@ class WebPanel(Utils):
 
       # A complete specification of the url for redirects is required
       url_redirect = self.url_gen('/webpanel')
-     
+
       # Object to handle the actual system config.
       # Assumes dhcpcd5 is controlling the network configuration
 
@@ -380,7 +380,7 @@ if __name__ == '__main__':
       #cherrypy.config.update({'request.error_response': show_blank_page_on_error})
 
    cherrypy.quickstart(PyServ(), '/', '/opt/webpanel/conf/pyserv.conf')
-   p.terminate()
+
 
    # --------------------------------------------------
    def show_blank_page_on_error(msg):

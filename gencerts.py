@@ -42,8 +42,8 @@ class GenCerts(Utils):
       self.write_sysfile(fspec_ini,ini_out)
 
       # House cleaning... gets a db error if doen't do this
-      # we don't care about crl
-      fspec_newcert = os.path.join(self.dir_root,'newcerts')
+      # we don't care about crl - remove the contents of newcerts
+      fspec_newcert = os.path.join(self.dir_root,'newcerts/*')
       self.rm_dir(fspec_newcert)
 
       # An index file needs to be present
@@ -62,9 +62,14 @@ class GenCerts(Utils):
       self.rw()
 
       cmd = "openssl req -verbose -config {} -newkey rsa:2048 -nodes -keyout {} -out {} -batch".format(fspec_ini,fspec_key,fspec_csr)
-      rtn = os.system(cmd)
-      if rtn:
-         raise SystemError('openssl cmd error')
+
+      rtn = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+      out,err = rtn.communicate()
+      print(">>>>>",out)
+      print(">>>>>",err)
+      #rtn = os.system(cmd)
+      #if rtn:
+      #   raise SystemError('openssl cmd error')
 
       chmod_cmd = "chmod 600 {}".format(fspec_key)
       rtn = os.system(chmod_cmd)
