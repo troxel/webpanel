@@ -1,6 +1,0 @@
-[submodule "packages/solo"]
-	path = packages/solo
-	url = http://github.com/troxel/solo
-[submodule "packages/TemplateRex-Python"]
-	path = packages/TemplateRex-Python
-	url = http://github.com/troxel/TemplateRex-Python
