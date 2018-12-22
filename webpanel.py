@@ -42,7 +42,6 @@ from webauth  import AuthSession
 from firmware import FirmwareUpdate
 from commonutils import Utils
 
-sys.path.insert(0,'./packages')
 import solo
 solo.chk_and_stopall(__file__)
 
