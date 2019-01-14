@@ -22,9 +22,12 @@ def get_iface_info():
    gw_default_lst = gw_hsh['default'][net.AF_INET]
 
    if_lst = net.interfaces()
-   if_lst.pop(0) # remove lo
 
    for if_name in if_lst:
+
+      # For now only consider eth0
+      if if_name != 'eth0': continue
+
       ifstruct = net.ifaddresses(if_name)
 
       try:
@@ -84,16 +87,21 @@ def get_dns_info():
 
    dns_hsh ={}
    dns_hsh['nameserver'] = []
+   resolv_file = '/etc/resolv.conf'
    try:
-      fid = open('/etc/resolv.conf', 'r')
+      fid = open(resolv_file, 'r')
       for line in fid:
          columns = line.split()
+
+         # skip blank entries
+         if len(columns) < 2: continue
+
          if columns[0] == 'nameserver':
             dns_hsh['nameserver'].extend(columns[1:])
          if columns[0] == 'domain':
             dns_hsh['domain'] = columns[1:][0]
    except Exception as err:
-         print("resolve.comf not found ",err, file=sys.stderr)
+         print("{} not found {}".format(resolv_file,err))
 
    return dns_hsh
 
@@ -107,7 +115,7 @@ def get_ntp_info():
    except Exception as err:
       print("Err ntpq:",err)
 
-   # The first two are dhcpcd and last of course is static...      
+   # The first two are dhcpcd and last of course is static...
    fspec_ntp_conf = ['/run/ntp.conf.dhcp','/var/lib/ntp/ntp.conf.dhcp','/etc/ntp.conf']
    for fspec in fspec_ntp_conf:
       if os.path.isfile(fspec):
@@ -132,38 +140,35 @@ def is_dhcp(nic_name='eth0'):
    # Ok best method it os actually issue a dhcpcd command and check the
    # results. I could parse the dhcpcd.conf file but bet to let the dhcpcd5
    # command do that for us.
+   try:
+      rtn = subprocess.check_output(['/sbin/dhcpcd','--test'],stderr=subprocess.STDOUT)
+   except:
+      # Typically if dhcpcd times out we are in static fall back mode
+      return False
 
-   rtn = subprocess.check_output(['/sbin/dhcpcd','--test'],stderr=subprocess.STDOUT)
 
    # Here is the significant line returned for each case
    #eth0: leased 130.46.82.68 for 172800 seconds <- dhcp
    #eth0: using static address 130.46.82.68/23   <- static
 
-   pattern0 = "{}: leased".format(nic_name)
-   match0 = re.search(pattern0.encode(),rtn)
+   pattern0 = "{}: leased".format(nic_name).encode()
+   match0 = re.search(pattern0,rtn)
    if match0:
       return True
 
    # If booted in static and then transition to dhcpcd
-   pattern0 = "new_dhcp_lease_time="
-   match0 = re.search(pattern0.encode(),rtn)
+   pattern0 = "new_dhcp_lease_time=".encode()
+   match0 = re.search(pattern0,rtn)
    if match0:
       return True
 
-   pattern1 = "{}: using static".format(nic_name)
-   match1 = re.search(pattern1.encode(),rtn)
+   pattern1 = "{}: using static".format(nic_name).encode()
+   match1 = re.search(pattern1,rtn)
    if match1:
       return False
 
-   # debug stuff
-   print('Nomatch')
-   print(pattern0)
-   pprint(match0)
-   print(pattern1)
-   pprint(match1)
-   pprint(rtn)
-
-   raise SystemError
+   # Should Never get here...
+   return False
 
    # Below doest work reliably.
    # Typical of dhcpcd5 raspberrian debian 9

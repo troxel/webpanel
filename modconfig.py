@@ -13,18 +13,18 @@ class DHCP(Utils):
 
    # Assumes dhcpcd5 network management...
    # Reference https://www.daemon-systems.org/man/dhcpcd.conf.5.html
-  
+
    # ------------------------
    def __init__(self):
       self.version = 1.0
-     
-      # Use a hash since there are a lot parameters including search path  
+
+      # Use a hash since there are a lot parameters including search path
       self.template_args = {}
       self.template_args['template_dirs'] = ['./templates_sys','/etc']
       self.template_args['cmnt_prefix']   = '##-'
       self.template_args['cmnt_postfix']  = '-##'
       self.template_args['dev_mode'] = True
- 
+
       Utils.__init__(self)
 
    # ------------------------
@@ -72,6 +72,19 @@ class DHCP(Utils):
       ntp_content = trex_ntp.render()
       self.write_sysfile('/etc/ntp.conf',ntp_content)
       os.system( 'systemctl restart ntp' )
+
+   # ------------------------
+   def set_dns(self, dns_servers=['8.8.8.8']):
+
+      self.template_args['fname'] = 't-resolv.conf'
+      trex_dns = TemplateRex(**self.template_args)
+
+      for dns_server in dns_servers:
+         if dns_server: # skip blank
+            trex_dns.render_sec('dns_blk',{'dns_server':dns_server})
+
+      dns_content = trex_dns.render()
+      self.write_sysfile('/etc/resolv.conf',dns_content)
 
    # ------------------------
    def reboot(self,delay='now'):

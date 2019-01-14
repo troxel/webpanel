@@ -187,11 +187,13 @@ class WebPanel(Utils):
 
          modconf.set_ntp_server(params['ntp_server'])
 
+         modconf.set_dns(dns_servers = [ params['dns_server_0'], params['dns_server_1'] ])
+
       else:
 
          modconf.set_dhcp()
 
-      rtn = os.system("(sleep 2; reboot)&")
+      ###rtn = os.system("(sleep 2; reboot)&")
 
       raise cherrypy.HTTPRedirect(url_redirect)
 
@@ -200,14 +202,11 @@ class WebPanel(Utils):
 
       err_hsh = {}
 
-      for key in ('ip_address','gateway','dns_server_0','dns_server_1'):
+      for key in ('ip_address','gateway'):
 
          try:
             ip_ckh = ipaddress.ip_address(params[key])
          except:
-            # Some can be blank
-            if key == 'dns_server_1' and params[key] == '': continue
-            if key == 'ntp_server' and params[key] == '': continue
             err_hsh[key] = "Not valid IP address"   # assumes id == name in input html
 
       for key in ('ntp_server',):
