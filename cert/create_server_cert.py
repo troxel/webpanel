@@ -3,12 +3,27 @@
 import os
 from templaterex import TemplateRex
 import time
+import subprocess
+import re
+
+# Config parameters
+ifname = 'eth0'
 
 import socket
 hostname = socket.gethostname()
 fqdn     = socket.getfqdn(hostname)
 ip_addr   = socket.gethostbyname(hostname)
 
+# Get ethernet interface ip addr
+ip_addr_iface = ''
+rtn = subprocess.check_output(['ifconfig',ifname],stderr=subprocess.STDOUT)
+pattern = "inet addr:(\S+)".encode()
+match = re.search(pattern,rtn)
+if match:
+   ip_addr_iface = match.group(1).decode()
+
+print("hostname = {}\nip_addr = {}".format(hostname,ip_addr))
+print("ip_addr_iface = {}\n".format(ip_addr_iface))
 
 trex = TemplateRex(fname='openssl-template.ini',cmnt_prefix='##-',cmnt_postfix='-##',dev_mode=True)
 
@@ -18,11 +33,12 @@ hsh['countryName'] = "US"
 hsh['organizationName'] = "IoT Embedded"
 hsh['commonName'] = "webpanel"
 
-hsh['ip_lst'] = [ ip_addr, "127.0.0.1" ]
+hsh['ip_lst'] = [ ip_addr,ip_addr_iface, "127.0.0.1" ]
 hsh['dns_lst'] = [ hostname, fqdn ]
 
 for inx,ip in enumerate(hsh['ip_lst']):
-   trex.render_sec('alt_name_ip',{'inx':inx,'ip':ip})
+   if ip:
+      trex.render_sec('alt_name_ip',{'inx':inx,'ip':ip})
 
 for inx,dns in enumerate(hsh['dns_lst']):
    trex.render_sec('alt_name_dns',{'inx':inx,'dns':dns})
@@ -41,8 +57,9 @@ fid.close()
 #   raise
 #print("keygen rtn = ",rtn)
 
-# House cleaning... gets a db error if doen't do this
+# House cleaning... get a db error if newcerts doesn't exist/not empty
 # we don't care about crl
+os.system('mkdir ./newcerts')
 os.system('rm ./newcerts/*')
 
 fid = open('index.txt','w+')
