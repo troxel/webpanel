@@ -19,24 +19,26 @@ Provide generic web interface to facilitate setting network and related paramete
 
 Cert generation happens in the ./cert directory. After a fresh install
 run these two command line scripts in the ./cert directory to generate a
-Certificate Authority (CA) cert and server cert
+Certificate Authority (CA) cert and server cert:
 
-cd ./cert
-./create_CA_cert.py
-./create_server_cert.py
+
+>cd ./cert  
+>./create_CA_cert.py  
+>./create_server_cert.py  
 
 Edit the Certificate Authority ini file (opensslCA.ini) for custom
 parameters if desired before running create_CA_cert.py. After running
-these two scripts the following files should be created
+these two scripts the following files should be created:
 
-webpanelCA.crt
-webpanelCA.key
-webpanel.crt
-webpanel.csr
-webpanel.key
+* webpanelCA.crt
+* webpanelCA.key
+* webpanel.crt
+* webpanel.csr
+* webpanel.key
 
 After creating these files reboot (or systemctl restart nginx) to restart
-nginx which requires the webpanel.crt and webpanel.key files.
+nginx which requires the webpanel.crt and webpanel.key files as specified
+in the webpanel nginx conf file.
 
 This CA cert is downloadable on the sslcert page. Install this cert in
 the trusted certificate store of the client system to complete ssl setup
