@@ -17,20 +17,35 @@ Provide generic web interface to facilitate setting network and related paramete
 
 # SSL Configuration
 
-A self-signed CA is generated in the ./cert directory. This CA is
-downloadable on the sslcert page. Install this cert in the trusted
-certificate store of the client system.
+Cert generation happens in the ./cert directory. After a fresh install
+run these two command line scripts in the ./cert directory to generate a
+Certificate Authority (CA) cert and server cert
 
-There is a command line tool
+cd ./cert
+./create_CA_cert.py
+./create_server_cert.py
 
-create_CA_cert.py
+Edit the Certificate Authority ini file (opensslCA.ini) for custom
+parameters if desired before running create_CA_cert.py. After running
+these two scripts the following files should be created
 
-That will recreate a new CA cert. After install run create_CA_cert.py
+webpanelCA.crt
+webpanelCA.key
+webpanel.crt
+webpanel.csr
+webpanel.key
 
-A new server cert should be created from the sslcert page which
-will create and install a new server with the parameters entered for the
-common name.  With in place and the CA installed in the trusted store you
-should have warning-free ssl access.  The new cert is a v3 x509 cert.
+After creating these files reboot (or systemctl restart nginx) to restart
+nginx which requires the webpanel.crt and webpanel.key files.
+
+This CA cert is downloadable on the sslcert page. Install this cert in
+the trusted certificate store of the client system to complete ssl setup
+and you should have warning-free ssl access.
+
+You can generate a new server cert from the sslcert page at any time
+which will be necessary if the IP address is changed.
+
+Certificates are v3 x509 certs.
 
 # Authentication
 
@@ -49,21 +64,21 @@ self.auth.authorize()
 
 # Templates
 
-HTML templates can be found in ./templates and customer override templates 
+HTML templates can be found in ./templates and customer override templates
 in ./template_cust. The search priority path is:
 
 ./template_cust
 ./tempates
 
-The template class looks in the search path and stops after finding the first named 
-template. The base layout template is in template_cust as an example  
+The template class looks in the search path and stops after finding the first named
+template. The base layout template is in template_cust as an example
 
 System templates can be found in ./templates_cust or in /etc. The search priority is:
 
 ./etc
-./templates_sys  
+./templates_sys
 
-The rendered system templates have hints of the source of the template used. 
+The rendered system templates have hints of the source of the template used.
 
 # Misc config file notes:
 
@@ -84,7 +99,7 @@ An example nginx config file is given in the setup directory. nginx
 provides for ssl (as cherrypy ssl implimentation is broken) and allows
 you to integrate other apps.
 
-The NGINX unit-file (/lib/systemctl/system/nginx.service) has a modification  
+The NGINX unit-file (/lib/systemctl/system/nginx.service) has a modification
 
 ExecStartPre=/bin/mkdir -p /var/log/nginx
 
@@ -112,8 +127,8 @@ will include the source of the templates in the output.
 
 ## Command line Options
 
--q  Runs in production mode. Most notably it turns off autoreload which is a 
-resource hog and turns off stdout to console. 
+-q  Runs in production mode. Most notably it turns off autoreload which is a
+resource hog and turns off stdout to console.
 
 # Dependencies
 
