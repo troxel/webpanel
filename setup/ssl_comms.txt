@@ -1,0 +1,45 @@
+There are two steps required to get SSL configured and working without
+warnings.  
+
+1. Install WebpanelCA, the Certifying Authority used to sign the server
+certificate, to the Trusted Root Store on the computer accessing the 
+Webpanel
+
+2. Generate a Server Certificate with the IP address/Hostname which is 
+signed by the Certifying Authority mentioned above. 
+
+---------------------
+1. Install the WebpanelCA: 
+
+1.1 Go to https://ip_addr/webpanel and click through warning message.
+Click on "Advance" and select Go to page.  
+
+At this point you will have a "Not Secure" warning in the location bar
+on the browser
+
+1.2 Navigate to SSL Cert page on Webpanel
+
+1.3 Download CA x509 certificate
+
+1.4 Open and select Install and then select Current User (default). 
+Click Next
+
+1.5 Select "Place all certificates in the follow store" and select
+"Trusted Root Certificate Authorities". Click Next or Install.
+
+1.6 This will cause the Cert Manager to give a Warning you are about to 
+install a cert in the Trusted Authorities. Click Install. 
+
+1.7 Close and Restart browser and go back to https://ip_addr/webpanel
+
+
+----------------
+2. Generate a Server Certificate
+
+2.1 Go to sslcert page
+
+2.2 Click "Generate New Server Cert". This will generate a new server
+cert and reboot the controller.  Wait for a minute while controller 
+reboots and then go to https://ip_addr/webpanel/
+
+At this point you should have warning free and secure SSL communications.
