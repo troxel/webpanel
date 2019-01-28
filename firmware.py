@@ -56,7 +56,7 @@ class FirmwareUpdate(Utils):
       # Do something
       r_stat = os.stat(upload_fspec)
 
-      if stat.st_size > 0:
+      if r_stat.st_size > 0:
          rtn = subprocess.check_output(['dpkg','--install',upload_fspec],stderr=subprocess.STDOUT)
          print(">>>>>> ",rtn)
 
