@@ -193,8 +193,8 @@ class WebPanel(Utils):
 
          modconf.set_dhcp()
 
-      rtn = subprocess.check_output(['systemctl','restart','dhcpcd.service'],stderr=subprocess.STDOUT)
-      ###rtn = os.system("(sleep 2; reboot)&")
+      ###rtn = subprocess.check_output(['systemctl','restart','dhcpcd.service'],stderr=subprocess.STDOUT)
+      rtn = os.system("(sleep 2; reboot)&")
 
       raise cherrypy.HTTPRedirect(url_redirect)
 
