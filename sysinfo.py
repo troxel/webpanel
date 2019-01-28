@@ -143,7 +143,7 @@ def is_dhcp(nic_name='eth0'):
    try:
       rtn = subprocess.check_output(['/sbin/dhcpcd','--test'],stderr=subprocess.STDOUT)
    except:
-      # Typically if dhcpcd times out we are in static fall back mode
+      # Typically if dhcpcd times out we are probably in static fall back mode
       return False
 
 
