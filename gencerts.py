@@ -65,8 +65,8 @@ class GenCerts(Utils):
 
       rtn = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
       out,err = rtn.communicate()
-      print(">>>>>",out)
-      print(">>>>>",err)
+      #print(">>>>>",out)
+      #print(">>>>>",err)
       #rtn = os.system(cmd)
       #if rtn:
       #   raise SystemError('openssl cmd error')

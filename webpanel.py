@@ -297,15 +297,16 @@ class WebPanel(Utils):
    @cherrypy.expose
    def sslcert_newcert_rtn(self,**params):
       #pprint.pprint(params)
-      # probably should add some validation
+      # Todo: add some validation
 
       self.auth.authorize()
 
       rtn = self.certobj.gen_server_cert( params,ip_lst=params['ip_lst'],dns_lst=params['dns_lst'] )
       if rtn == True:
+         rtn = os.system("(sleep 2; systemctl restart nginx)&")
          raise cherrypy.InternalRedirect('/webpanel/sslcert/')
       else:
-          raise cherrypy.HTTPError(500,self.certobj.error_msg)
+         raise cherrypy.HTTPError(500,self.certobj.error_msg)
 
 
    # --------------------------------------------
