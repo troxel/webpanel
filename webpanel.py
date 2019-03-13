@@ -211,9 +211,19 @@ class WebPanel(Utils):
             err_hsh[key] = "Not valid IP address"   # assumes id == name in input html
 
       for key in ('ntp_server',):
-         if not sysinfo.is_valid_hostname(params[key]):
-            err_hsh[key] = "Not valid IP/Host address"
+         if params[key]:
+            if not sysinfo.is_valid_hostname(params[key]):
+               err_hsh[key] = "Not valid IP/Host address"
+         else:
+            err_hsh[key] = "No NTP Server Selected"
 
+      # DNS servers are not required but if entered check
+      for key in ('dns_server_0','dns_server_1'):
+         if params[key]:
+            if not sysinfo.is_valid_hostname(params[key]):
+               err_hsh[key] = "Invalid DNS Name"
+
+      # Check range on cidr
       cidr = int(params['cidr'])
       if ( cidr < 1 or cidr > 31):
          err_hsh['cidr'] = "Must integer between 1 and 31"
